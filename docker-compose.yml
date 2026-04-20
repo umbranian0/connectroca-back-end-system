@@ -1,0 +1,52 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: connecttroca-postgres
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME:-connecttroca}
+      POSTGRES_USER: ${DATABASE_USERNAME:-strapi}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-strapi}
+    ports:
+      - "${DATABASE_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  strapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: connecttroca-strapi
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: development
+      DATABASE_HOST: postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${PORT:-1337}:1337"
+    volumes:
+      - ./:/opt/app
+      - strapi-node-modules:/opt/app/node_modules
+      - strapi-cache:/opt/app/.cache
+      - strapi-tmp:/opt/app/.tmp
+      - strapi-build:/opt/app/build
+      - strapi-uploads:/opt/app/public/uploads
+
+volumes:
+  postgres-data:
+  strapi-node-modules:
+  strapi-cache:
+  strapi-tmp:
+  strapi-build:
+  strapi-uploads:
