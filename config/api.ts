@@ -1,11 +1,11 @@
 import type { Core } from '@strapi/strapi';
 
-const config: Core.Config.Api = {
+const apiConfig = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Api => ({
   rest: {
-    defaultLimit: 25,
-    maxLimit: 100,
-    withCount: true,
+    defaultLimit: env.int('API_DEFAULT_LIMIT', 25),
+    maxLimit: env.int('API_MAX_LIMIT', 100),
+    withCount: env.bool('API_WITH_COUNT', true),
   },
-};
+});
 
-export default config;
+export default apiConfig;

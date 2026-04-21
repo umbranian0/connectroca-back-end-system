@@ -1,116 +1,121 @@
 # Command Reference
 
-## Purpose of this document
+## Purpose
 
-This document explains the main commands used in the ConnectTroca backend project and when each one should be used.
-It is written for junior engineers who need both the command and the practical reason behind it.
+This document explains the commands used most often in the ConnectTroca Strapi backend and when to use them.
 
-## Before running commands
+## Enter the project first
 
-Make sure you are inside the backend project folder.
-
-### If you are using the local monorepo layout
+Monorepo layout:
 
 ```powershell
 cd "C:\Users\vasil\Documents\Aulas\projeto integrado 2\backend_conectra\local-dev\connecttroca-api"
 ```
 
-### If you are using the published standalone repository
+Standalone published repository:
 
 ```powershell
 cd connectroca-back-end-system
 ```
 
-## Environment setup command
+## Environment setup
 
 ### `Copy-Item .env.example .env`
 
-Purpose:
-
-- creates the local runtime environment file from the committed template
+Creates the local runtime configuration file from the committed template.
 
 Use this when:
 
-- you are setting up the project for the first time
-- `.env` was deleted
-- the team updated `.env.example` and you need to refresh local values
+- setting up the project for the first time
+- recreating a deleted `.env`
+- refreshing local config after team-level `.env.example` changes
 
-## Docker commands
+## Docker workflow
 
 ### `docker compose up --build`
 
-Purpose:
-
-- builds the Strapi image if needed
-- starts the backend stack
+Standard local development command.
 
 Use this when:
 
 - starting the project
-- applying Dockerfile changes
-- applying dependency changes
+- rebuilding after dependency changes
+- rebuilding after Dockerfile changes
 
 ### `docker compose down`
 
-Purpose:
-
-- stops the running containers without deleting volumes
-
-Use this when:
-
-- finishing work for the day
-- freeing ports temporarily
+Stops containers and keeps volumes.
 
 ### `docker compose down -v`
 
-Purpose:
-
-- stops the containers and removes named volumes
+Stops containers and removes named volumes.
 
 Use this when:
 
-- you need a full reset
-- the database state should be discarded
-- the local environment became inconsistent
+- local database state can be discarded
+- the environment is inconsistent
+- Docker state needs a clean rebuild at the project level
 
 ### `docker compose ps`
 
-Purpose:
-
-- shows whether `postgres` and `strapi` are running
-
-Use this when:
-
-- you are unsure whether the backend is up
+Shows whether PostgreSQL and Strapi are running and healthy.
 
 ### `docker compose logs -f strapi`
 
-Purpose:
-
-- streams Strapi logs continuously
+Streams Strapi logs continuously.
 
 Use this when:
 
-- startup fails
-- a route throws errors
-- you need runtime feedback
+- waiting for first startup
+- debugging route or permission issues
+- checking whether Strapi has finished rebuilding
 
 ### `docker compose logs -f postgres`
 
-Purpose:
-
-- streams PostgreSQL logs continuously
+Streams PostgreSQL logs continuously.
 
 Use this when:
 
-- the database does not start
-- Strapi cannot connect to PostgreSQL
+- database startup fails
+- Strapi cannot connect to the database
 
-## npm scripts
+## Host-machine npm workflow
+
+Before host-machine commands, make sure Node `20+` is active and install dependencies from the lockfile:
+
+```powershell
+npm ci
+```
+
+### `npm run develop`
+
+Starts Strapi in development mode on the host machine.
+
+### `npm run build`
+
+Builds the Strapi admin panel.
+
+### `npm run start`
+
+Starts Strapi in non-development mode.
+
+### `npm run console`
+
+Opens the Strapi console.
+
+### `npm run typecheck`
+
+Runs TypeScript type checking with no emitted files.
+
+### `npm run strapi -- help`
+
+Exposes Strapi CLI help.
+
+## npm Docker shortcuts
 
 ### `npm run docker:up`
 
-Equivalent to:
+Shortcut for:
 
 ```powershell
 docker compose up --build
@@ -118,108 +123,77 @@ docker compose up --build
 
 ### `npm run docker:down`
 
-Equivalent to:
+Shortcut for:
 
 ```powershell
 docker compose down
 ```
 
+### `npm run docker:logs`
+
+Shortcut for:
+
+```powershell
+docker compose logs -f strapi
+```
+
+### `npm run docker:ps`
+
+Shortcut for:
+
+```powershell
+docker compose ps
+```
+
 ### `npm run docker:reset`
 
-Equivalent to:
+Shortcut for:
 
 ```powershell
 docker compose down -v
 ```
 
-### `npm run develop`
-
-Purpose:
-
-- starts Strapi in development mode on the host machine
-
-Use this when:
-
-- you want a non-Docker debugging flow
-- PostgreSQL is already available
-
-### `npm run dev`
-
-Same behavior as `npm run develop`.
-
-### `npm run build`
-
-Purpose:
-
-- builds the Strapi admin panel
-
-Use this when:
-
-- checking production-oriented build health
-- preparing for `npm run start`
-
-### `npm run start`
-
-Purpose:
-
-- starts the built Strapi application in non-development mode
-
-Use this when:
-
-- simulating a more production-like start sequence
-
-### `npm run strapi`
-
-Purpose:
-
-- exposes the Strapi CLI directly
-
-Examples:
-
-```powershell
-npm run strapi -- version
-npm run strapi -- help
-```
-
-## Practical command sequence for a new engineer
-
-Use this order on first setup:
+## Recommended first-run sequence
 
 ```powershell
 Copy-Item .env.example .env
 docker compose up --build
 ```
 
-Then open:
+Then validate:
 
 ```text
 http://localhost:1337/admin
 http://localhost:1337/api/health
 ```
 
-## Practical command sequence for daily work
+## Recommended daily sequence
 
-Start work:
+Start:
 
 ```powershell
 docker compose up --build
 ```
 
-Inspect problems if needed:
+Inspect status:
 
 ```powershell
 docker compose ps
 docker compose logs -f strapi
 ```
 
-Stop work:
+Stop:
 
 ```powershell
 docker compose down
 ```
 
-Reset only if necessary:
+## Important command rule
+
+If `package.json` or `package-lock.json` changes, rebuild the Docker image with:
 
 ```powershell
-docker compose down -v
+docker compose up --build
 ```
+
+The container image installs dependencies during build, which is the intended reproducible workflow.

@@ -4,6 +4,8 @@ build/
 .cache/
 .tmp/
 .strapi/
+database/
+.strapi-updater.json
 .env
 npm-debug.log*
 yarn-error.log*

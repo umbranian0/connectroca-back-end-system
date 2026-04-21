@@ -1,8 +1,9 @@
 import type { Core } from '@strapi/strapi';
+import type { ClientKind } from '@strapi/types/dist/core/config/database';
 
 const databaseConfig = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Database => ({
   connection: {
-    client: env('DATABASE_CLIENT', 'postgres'),
+    client: env('DATABASE_CLIENT', 'postgres') as ClientKind,
     connection: {
       connectionString: env('DATABASE_URL', undefined),
       host: env('DATABASE_HOST', 'postgres'),

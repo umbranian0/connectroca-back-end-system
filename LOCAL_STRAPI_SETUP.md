@@ -1,147 +1,102 @@
 # Local Strapi Backend Setup for ConnectTroca
 
-## Purpose of this document
+## Purpose
 
-This guide explains how to start, understand, and maintain the local ConnectTroca backend environment.
-It is written for junior software engineers who need a reliable, step-by-step process to run the backend locally and integrate it with the frontend.
-
-The backend stack uses:
-
-- Strapi as the headless CMS and API framework
-- PostgreSQL as the relational database
-- Docker Compose to run both services locally
+This document explains the recommended local setup for the ConnectTroca backend.
+It is written for junior engineers and aligns the project with better Strapi 5 development practices.
 
 ## Important context
 
 The folder `backend_conectra` is the upstream Strapi monorepo.
-That repository is useful as a source of Strapi code, but it is not the project backend that the team should work on every day.
+That monorepo is not the daily project backend.
 
-For project development, the real local backend workspace is:
+The actual project backend workspace is:
 
 ```text
 local-dev/connecttroca-api
 ```
 
-This workspace is intentionally isolated so that engineers can focus on building the project API instead of working inside Strapi's internal monorepo structure.
+If you use the published standalone repository, the same backend project exists at repository root.
 
-## How to get to the project
+## How to enter the project
 
-Use one of the following entry paths, depending on how you received the codebase.
-
-### Option 1. You already have the local monorepo folder on your machine
-
-Open PowerShell and run:
+### Monorepo layout
 
 ```powershell
 cd "C:\Users\vasil\Documents\Aulas\projeto integrado 2\backend_conectra\local-dev\connecttroca-api"
 ```
 
-### Option 2. You are starting from the published backend repository
-
-Clone the repository and enter it:
+### Published standalone repository
 
 ```powershell
 git clone https://github.com/umbranian0/connectroca-back-end-system.git
 cd connectroca-back-end-system
 ```
 
-In the published repository, the backend project is already at the repository root, so there is no additional `local-dev/connecttroca-api` level.
+## Runtime model
 
-## What this local workspace contains
+The standard local runtime is Docker Compose.
 
-The local backend workspace includes the following main pieces:
+The stack includes:
 
-- a standalone Strapi application
-- a Docker Compose file that starts PostgreSQL and Strapi together
-- an environment template in `.env.example`
-- CORS configuration for the local frontend
-- a sample public route at `GET /api/health`
-- documentation for commands, structure, workflow, and troubleshooting
+- PostgreSQL
+- Strapi
 
-## Who should use this guide
+Good-practice decisions in the current setup:
 
-Use this guide if you need to:
-
-- run the backend for the first time
-- understand which folder actually matters for project work
-- create the first admin user in Strapi
-- connect the frontend to a local backend
-- reset the local database safely
-- start building new APIs under `src/api`
+- Node dependencies are installed in the Docker image with `npm ci`
+- the container mounts only development folders instead of replacing the whole app root
+- Strapi has a container healthcheck based on `/api/health`
+- admin session settings are explicitly configured
+- API pagination defaults are centralized in config
 
 ## Prerequisites
 
-Before running anything, make sure the following tools are available:
-
 - Docker Desktop
-- a terminal with PowerShell support
-- optional: Node.js 20 if you want to run Strapi without Docker
-- optional: Git if you need to clone the published repository
-
-You also need these ports to be free on your machine:
-
-- `1337` for Strapi
-- `5432` for PostgreSQL
+- PowerShell
+- Git if cloning the standalone repository
+- Node `20+` only if you plan to run host-machine `npm` commands
 
 ## First-time setup
 
-### Step 1. Create the environment file
+### Step 1. Go to the backend project folder
 
-Copy the example environment file:
+Use one of the paths shown above.
+
+### Step 2. Create the local environment file
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-Why this matters:
-
-- `.env.example` is a template committed to version control
-- `.env` is the local machine-specific file used at runtime
-- `.env` should not be committed because it contains environment-specific settings and may later contain secrets
-
-### Step 2. Start the containers
-
-Run:
+### Step 3. Start the backend stack
 
 ```powershell
 docker compose up --build
 ```
 
-What this command does:
+What this does:
 
-- builds the Strapi container image from the local Dockerfile
-- starts a PostgreSQL container
-- starts a Strapi container
-- mounts the local project directory into the container for live development
-- creates Docker volumes for the database, uploads, cache, and node modules
+- builds the Strapi development image
+- installs dependencies inside the image with `npm ci`
+- starts PostgreSQL
+- starts Strapi
+- mounts `src`, `config`, `public`, and generated `types` for local development
 
-The first run usually takes longer because dependencies and images may need to be downloaded.
+### Step 4. Wait until Strapi is ready
 
-### Step 3. Wait for Strapi to finish booting
+The first startup must finish the Strapi boot sequence.
+Wait until logs show `Strapi started successfully`.
 
-Do not open the admin panel immediately.
-Wait until the logs show that the application is ready.
-
-What you are looking for conceptually:
-
-- PostgreSQL is healthy
-- Strapi has connected to the database
-- Strapi has finished booting in development mode
-
-### Step 4. Open the admin panel
-
-Once the backend is running, open:
+### Step 5. Open the admin panel
 
 ```text
 http://localhost:1337/admin
 ```
 
-On the first run, Strapi will ask you to create the first administrator account.
-This account lets you manage content types, users, permissions, and data.
+Create the first administrator account when prompted.
 
-### Step 5. Confirm the public API is reachable
-
-Open:
+### Step 6. Validate the public health endpoint
 
 ```text
 http://localhost:1337/api/health
@@ -150,430 +105,185 @@ http://localhost:1337/api/health
 Expected result:
 
 - a JSON response
-- `status` should be `ok`
-
-This endpoint is a simple connectivity check.
-It proves that the backend container is up and that the API layer is reachable from the browser.
+- `status: ok`
 
 ## Day-to-day commands
 
-All commands below should be run from the backend project folder.
-If you are inside the monorepo layout, that means `local-dev/connecttroca-api`.
-If you are inside the published repository, that means the repository root.
-
-### Main Docker commands
-
-#### `docker compose up --build`
-
-Purpose:
-
-- builds the Strapi image if needed
-- starts PostgreSQL and Strapi
-- prepares the backend for daily development
-
-Use this when:
-
-- you are starting the backend for the day
-- the Docker image changed
-- package dependencies changed
-
-#### `docker compose down`
-
-Purpose:
-
-- stops the containers
-- keeps volumes and database data intact
-
-Use this when:
-
-- you want to stop working temporarily
-- you want to free the ports
-- you do not want to lose data
-
-#### `docker compose down -v`
-
-Purpose:
-
-- stops the containers
-- removes named volumes
-- deletes local database state
-
-Use this when:
-
-- the local database is corrupted
-- you want a completely clean environment
-- you want to recreate the first admin user from scratch
-
-#### `docker compose ps`
-
-Purpose:
-
-- lists the current status of the services
-
-Use this when:
-
-- you want to confirm whether `postgres` and `strapi` are running
-
-#### `docker compose logs -f strapi`
-
-Purpose:
-
-- streams live Strapi logs
-
-Use this when:
-
-- Strapi does not start
-- routes do not behave as expected
-- you need to inspect runtime errors
-
-#### `docker compose logs -f postgres`
-
-Purpose:
-
-- streams PostgreSQL logs
-
-Use this when:
-
-- Strapi cannot connect to the database
-- you suspect database startup problems
-
-### npm script commands
-
-The following commands are defined in `package.json`.
-
-#### `npm run docker:up`
-
-Shortcut for:
+### Start the local stack
 
 ```powershell
 docker compose up --build
 ```
 
-#### `npm run docker:down`
+Use this after:
 
-Shortcut for:
+- dependency changes
+- Dockerfile changes
+- environment resets
+
+### Stop the stack
 
 ```powershell
 docker compose down
 ```
 
-#### `npm run docker:reset`
-
-Shortcut for:
+### Reset local project state
 
 ```powershell
 docker compose down -v
 ```
 
-#### `npm run develop`
+This removes named volumes, including PostgreSQL data.
 
-Purpose:
-
-- starts Strapi in development mode on the host machine instead of Docker
-
-Use this when:
-
-- you want host-machine debugging
-- you already have PostgreSQL running and configured
-
-#### `npm run dev`
-
-Same as `npm run develop`.
-
-#### `npm run build`
-
-Purpose:
-
-- builds the Strapi admin panel assets
-
-Use this when:
-
-- you want a production-oriented start sequence
-- you want to validate that the admin build succeeds
-
-#### `npm run start`
-
-Purpose:
-
-- starts Strapi in non-development mode after a build
-
-Use this when:
-
-- you want to simulate a more production-like runtime
-
-#### `npm run strapi`
-
-Purpose:
-
-- runs the Strapi CLI directly
-
-Examples:
+### Inspect status
 
 ```powershell
-npm run strapi -- version
-npm run strapi -- help
+docker compose ps
+docker compose logs -f strapi
+docker compose logs -f postgres
 ```
 
-## How the local stack is structured
-
-The Docker Compose setup contains two services.
-
-### `postgres`
-
-Responsibilities:
-
-- stores relational data for Strapi
-- persists data across container restarts through a named volume
-
-Important notes:
-
-- database name comes from `DATABASE_NAME`
-- username comes from `DATABASE_USERNAME`
-- password comes from `DATABASE_PASSWORD`
-
-### `strapi`
-
-Responsibilities:
-
-- runs the backend API
-- serves the admin panel
-- serves public REST endpoints
-- uses the PostgreSQL container as its database
-
-Important notes:
-
-- runs in development mode
-- mounts the local project folder into the container
-- installs dependencies in the container if they are not present yet
-
-## Key files and why they matter
-
-### `.env.example`
-
-This file defines the environment variables needed to run the project.
-It includes:
-
-- server host and port
-- Strapi secrets
-- PostgreSQL connection settings
-- allowed frontend origins for CORS
-
-### `docker-compose.yml`
-
-This file defines the full local runtime.
-It tells Docker:
-
-- which containers to start
-- which ports to expose
-- which folders and volumes to mount
-- which service must wait for the database to become healthy
-
-### `Dockerfile`
-
-This file defines how the Strapi container is built.
-It uses Node.js 20 and starts the app in development mode.
-
-### `config/database.ts`
-
-This file tells Strapi how to connect to PostgreSQL.
-If the values in `.env` are wrong, Strapi will fail to start.
-
-### `config/server.ts`
-
-This file defines:
-
-- host
-- port
-- public URL
-- application keys used by Strapi
-
-### `config/middlewares.ts`
-
-This file is important for frontend integration.
-It enables CORS for the local frontend origins so browser requests from the frontend are accepted by the backend.
-
-### `src/api`
-
-This folder is where project APIs should be created.
-Each API feature typically has its own folder with routes, controllers, services, and schemas depending on how the feature is built.
-
-### `src/api/health`
-
-This is the sample API already included.
-Use it as a very small reference for the route and controller structure.
-
-## Where future development should happen
-
-Future backend work should be concentrated in predictable places.
-
-### Primary development area: `src/api`
-
-This is where new project modules should be created.
-The first likely modules are:
-
-- `src/api/profiles`
-- `src/api/groups`
-- `src/api/forum-topics`
-- `src/api/resources`
-- `src/api/messages`
-
-Use this area for:
-
-- routes
-- controllers
-- services
-- feature-specific schemas
-- custom business logic
-
-### Cross-cutting configuration area: `config`
-
-Use this only when a change affects the whole backend.
-Examples:
-
-- CORS changes
-- server URL changes
-- database configuration changes
-- API pagination defaults
-
-### Admin configuration and content modeling: Strapi admin panel
-
-Use the admin panel for:
-
-- content type creation
-- field changes
-- role and permission settings
-- content management
-
-### Documentation area: `docs`
-
-Update documentation whenever you add:
-
-- a new command
-- a new required environment variable
-- a new setup step
-- a new feature module that other engineers need to understand
-
-## Frontend integration
-
-The frontend should use this base URL locally:
-
-```text
-http://localhost:1337
-```
-
-If the frontend uses `fetch`, Axios, or another client, API calls should point to routes under this base URL.
-
-Examples:
-
-```text
-http://localhost:1337/api/health
-http://localhost:1337/api/groups
-http://localhost:1337/api/resources
-```
-
-CORS is already configured for common local frontend origins, including:
-
-- `http://localhost:5173`
-- `http://127.0.0.1:5173`
-- `http://localhost:3000`
-- `http://127.0.0.1:3000`
-
-## Recommended development workflow
-
-A junior engineer should follow this sequence:
-
-1. Get to the backend project folder.
-2. Start the backend with Docker.
-3. Confirm `/api/health` works.
-4. Open the admin panel.
-5. Create or update content types.
-6. Add routes and controllers under `src/api` if custom endpoints are needed.
-7. Test the endpoint in the browser or Postman.
-8. Connect the frontend to the endpoint.
-9. Only reset the database if necessary.
-
-## Common problems and what they usually mean
-
-### Port `1337` is already in use
-
-Meaning:
-
-- another Strapi process is already running
-- another application is using the port
-
-Fix:
-
-- stop the other process
-- or change the `PORT` value in `.env`
-
-### Port `5432` is already in use
-
-Meaning:
-
-- another PostgreSQL instance is already running locally
-
-Fix:
-
-- stop the other PostgreSQL process
-- or map the compose port differently and update the relevant settings
-
-### Strapi cannot connect to the database
-
-Meaning:
-
-- PostgreSQL is not healthy yet
-- the credentials in `.env` do not match the container settings
-- a stale volume may contain incompatible state
-
-Fix:
-
-1. check the container logs
-2. confirm `.env` values
-3. if needed, run `docker compose down -v` and start again
-
-### The frontend gets CORS errors
-
-Meaning:
-
-- the frontend origin is not listed in `CORS_ORIGIN`
-
-Fix:
-
-- add the frontend origin to `.env`
-- restart the backend after changing the environment file
-
-## Optional host-machine workflow
-
-You can run Strapi directly on the host machine instead of inside Docker.
-This is useful for some debugging workflows, but it should not be the default team setup.
-
-Basic sequence:
+### npm shortcuts
 
 ```powershell
-npm install
+npm run docker:up
+npm run docker:down
+npm run docker:logs
+npm run docker:ps
+npm run docker:reset
+```
+
+## Host-machine commands
+
+Use host-machine `npm` commands only when you need direct debugging outside Docker.
+
+The project expects:
+
+- Node `20.20.2` via `.nvmrc`
+- npm `10+`
+
+Install dependencies from the lockfile:
+
+```powershell
+npm ci
+```
+
+Then use:
+
+```powershell
+npm run typecheck
+npm run build
 npm run develop
 ```
 
-If you use this path, you still need a running PostgreSQL database.
-The safest approach is usually to keep PostgreSQL in Docker and run only Strapi on the host if needed.
+## Strapi development good practices used in this project
 
-## Recommended next implementation steps
+### 1. Prefer content types before custom code
 
-1. Create the project content types needed by the frontend.
-2. Define role and permission rules in `users-permissions`.
-3. Implement API contracts for groups, forum topics, resources, profile data, and messages.
-4. Add development seed data after the content model is stable.
-5. Document the frontend environment variables that point to this backend.
+For standard CRUD, start by creating the content type in Strapi.
+Do not write custom controllers before checking whether generated CRUD already solves the need.
 
-## Related documentation
+### 2. Keep controllers thin
 
-If you are in the published standalone repository, read these files directly at the repository root.
-If you are in the monorepo layout, the backend-specific files below are under `local-dev/connecttroca-api`, while `LOCAL_STRAPI_SETUP.md` remains at the monorepo root.
+Controllers should mainly:
 
-- `README.md`
-- `LOCAL_STRAPI_SETUP.md`
-- `docs/COMMAND_REFERENCE.md`
-- `docs/PROJECT_STRUCTURE.md`
-- `docs/API_DEVELOPMENT_WORKFLOW.md`
-- `docs/FUTURE_DEVELOPMENT_AREAS.md`
-- `docs/TROUBLESHOOTING.md`
+- receive the request
+- call a service if needed
+- return a response
+
+### 3. Put business logic in services
+
+If behavior is reusable or domain-specific, it belongs in a service.
+
+### 4. Commit generated schemas
+
+Content-type changes generate source files under:
+
+```text
+src/api/<feature>/content-types/<feature>/schema.json
+```
+
+Those files should be committed.
+
+### 5. Review permissions early
+
+Use the `users-permissions` plugin intentionally.
+Do not leave new routes public by accident.
+
+### 6. Use reproducible installs
+
+Use:
+
+- `npm ci` on the host machine
+- `docker compose up --build` for Docker rebuilds
+
+## Where future development should happen
+
+### Primary feature area
+
+```text
+src/api
+```
+
+Likely first modules:
+
+- `profiles`
+- `groups`
+- `resources`
+- `forum-topics`
+- `messages`
+
+### Content modeling and permissions
+
+Use the Strapi admin panel for:
+
+- content types
+- fields
+- relations
+- permissions
+- sample content
+
+### Cross-cutting config
+
+Use `config/` only for:
+
+- CORS
+- database settings
+- server settings
+- pagination defaults
+- admin settings
+
+### Documentation
+
+Update `docs/` when a change affects:
+
+- setup steps
+- commands
+- environment variables
+- feature structure
+
+## Documentation map
+
+Read these files in order:
+
+1. `README.md`
+2. `LOCAL_STRAPI_SETUP.md`
+3. `docs/COMMAND_REFERENCE.md`
+4. `docs/PROJECT_STRUCTURE.md`
+5. `docs/STRAPI_DEVELOPMENT_STANDARDS.md`
+6. `docs/API_DEVELOPMENT_WORKFLOW.md`
+7. `docs/FUTURE_DEVELOPMENT_AREAS.md`
+8. `docs/TROUBLESHOOTING.md`
+
+## Troubleshooting note
+
+If `docker compose` fails with Docker API internal server errors before the project even starts, treat it as a Docker Desktop problem first.
+The recent known recovery sequence is:
+
+```powershell
+Get-Process 'Docker Desktop','com.docker.backend','com.docker.build','com.docker.dev-envs' -ErrorAction SilentlyContinue | Stop-Process -Force
+wsl --shutdown
+Start-Process "C:\Program Files\Docker\Docker\Docker Desktop.exe"
+```
+
+If Docker itself remains unhealthy after restart, use Docker Desktop troubleshooting tools.

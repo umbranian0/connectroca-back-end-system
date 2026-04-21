@@ -2,11 +2,16 @@ FROM node:20-bookworm-slim
 
 WORKDIR /opt/app
 
-RUN npm config set fund false \
-  && npm config set audit false
+COPY package.json package-lock.json ./
 
-COPY package.json ./
+RUN npm ci --no-audit --no-fund
+
+COPY config ./config
+COPY public ./public
+COPY src ./src
+COPY tsconfig.json ./
+COPY .env.example ./
 
 EXPOSE 1337
 
-CMD ["sh", "-c", "if [ ! -d node_modules/@strapi/strapi ]; then npm install; fi && npm run develop"]
+CMD ["npm", "run", "develop"]

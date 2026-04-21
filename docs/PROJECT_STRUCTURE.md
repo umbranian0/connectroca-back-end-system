@@ -1,136 +1,171 @@
 # Project Structure
 
-## Why this document exists
+## Purpose
 
-Junior engineers often lose time because they do not know which files are configuration, which files are runtime code, and which files are safe to change.
-This document explains the purpose of the main folders in the local Strapi workspace.
+This document explains where code should live in this Strapi project.
+The goal is to help junior engineers choose the correct layer before they start editing files.
 
-## Root-level files
+## Root files
 
 ### `package.json`
 
-This file defines:
+Defines:
 
-- project name and version
-- npm scripts
+- scripts
 - runtime dependencies
 - development dependencies
+- supported Node and npm versions
 
-Important scripts:
+### `package-lock.json`
 
-- `npm run develop`
-- `npm run docker:up`
-- `npm run docker:down`
-- `npm run docker:reset`
+Locks exact package versions.
+Keep this file in sync with `package.json`.
+
+### `.nvmrc`
+
+Defines the expected host-machine Node version for local `npm` commands.
 
 ### `.env.example`
 
-This is the template for the local environment file.
-You copy it to `.env` before running the project.
-
-Do not edit `.env.example` for machine-specific values unless the whole team needs those changes.
-Use `.env` for local-only changes.
+Template for the shared runtime configuration.
+Copy this to `.env` for local work.
 
 ### `.env`
 
-This is your local runtime configuration file.
-It is not meant to be committed.
+Machine-local runtime configuration.
+Do not commit this file.
 
 ### `docker-compose.yml`
 
-This file defines the local runtime stack.
-It starts PostgreSQL and Strapi together and binds the correct ports and volumes.
+Defines the local development stack:
+
+- PostgreSQL
+- Strapi
+- container health checks
+- mounted development folders
 
 ### `Dockerfile`
 
-This file defines the Strapi container image.
-It is used by the `strapi` service in Docker Compose.
+Defines the Strapi development image.
+Dependencies are installed with `npm ci` during image build.
 
-## Configuration folder
+## Configuration layer
+
+Everything in `config/` affects the whole backend application.
 
 ### `config/admin.ts`
 
-Controls admin-related behavior such as:
+Admin configuration:
 
-- admin URL
+- admin path
 - admin JWT secret
-- API token salt
-- transfer token salt
+- session lifespans
+- audit log settings
+- token salts
 
 ### `config/api.ts`
 
-Controls REST API defaults such as pagination limits.
+Global REST API defaults such as:
+
+- default pagination limit
+- maximum pagination limit
+- whether total counts are returned
 
 ### `config/database.ts`
 
-Controls how Strapi connects to PostgreSQL.
-This file is one of the first places to inspect if the backend cannot connect to the database.
+Database connection configuration for PostgreSQL.
 
 ### `config/middlewares.ts`
 
-Controls middleware used by the application.
-It currently includes:
+Application middleware configuration, including:
 
-- security middleware
-- CORS configuration
-- request parsing middleware
-- session middleware
-- static file serving middleware
-
-This file is especially important when the frontend cannot access the backend because of cross-origin restrictions.
+- security headers
+- CORS
+- body parsing
+- sessions
+- public file serving
 
 ### `config/server.ts`
 
-Controls host, port, public URL, and app keys.
+Server host, port, public URL, and app keys.
 
-## Source code folder
+## Source layer
 
 ### `src/index.ts`
 
-Entry point for custom application logic.
-Right now it only logs a startup message, but it can be extended later for application-level bootstrap code.
+Application-level register and bootstrap hooks.
+Use this file for app-wide initialization that does not belong to a single feature.
 
 ### `src/api`
 
-Main location for project APIs.
-This is where feature-specific backend code should be created.
+Primary location for project features.
+This is the default place for backend business modules.
 
-A typical feature may eventually contain files for:
+Typical feature layout:
 
-- routes
-- controllers
-- services
-- content type schemas
-- policies
-- middlewares
+```text
+src/api/<feature>/
+  content-types/<feature>/schema.json
+  controllers/
+  routes/
+  services/
+  policies/
+```
+
+### `src/api/<feature>/content-types/<feature>/schema.json`
+
+Generated Strapi content-type schema.
+If you create or edit a content type through Strapi, this file should be committed.
+
+### `src/api/<feature>/controllers`
+
+HTTP request handlers.
+Keep these thin.
+
+### `src/api/<feature>/services`
+
+Business logic and reusable orchestration.
+This is the preferred home for custom backend behavior.
+
+### `src/api/<feature>/routes`
+
+Custom route definitions when generated CRUD is not enough.
+
+### `src/api/<feature>/policies`
+
+Feature-level access rules and request constraints.
 
 ### `src/api/health`
 
-A minimal feature used to confirm that the backend is reachable.
-It exposes:
+Minimal example feature used to validate that the backend is alive.
+This is intentionally simpler than a real business module.
 
-- `GET /api/health`
+## Generated types
 
-This feature is intentionally simple and should be used as a reference for how a route maps to a controller.
+### `types/generated`
 
-## Public folder
+Generated Strapi TypeScript definitions.
+Do not place business logic here.
+These files support editor tooling and type safety.
+
+## Public assets
 
 ### `public/uploads`
 
-This folder stores uploaded files.
-In Docker, uploads are persisted through a named volume.
-The `.gitkeep` file exists only to keep the folder in version control.
+Persistent uploaded files.
+In Docker, uploads are stored through a named volume.
 
-## Which files are usually safe to edit
+## Safe editing zones
 
-A junior engineer will most often edit:
+A junior engineer will usually work in:
 
-- `.env` for local-only runtime changes
-- files inside `src/api`
+- `src/api`
+- the Strapi admin panel
+- `.env`
 - selected files in `config`
-- documentation files in `docs`
+- `docs`
 
-## Which files should be changed carefully
+## Files that affect the whole team
 
 Be careful with:
 
@@ -139,10 +174,12 @@ Be careful with:
 - `config/database.ts`
 - `config/middlewares.ts`
 - `config/server.ts`
+- `config/admin.ts`
 
-These files affect the whole team because they define how the app starts and communicates.
+These files affect startup, security, database behavior, and local integration.
 
-## Practical rule of thumb
+## Practical rule
 
-If you are building a business feature, work in `src/api`.
-If you are fixing startup, database, host, or browser integration issues, inspect `config`, `.env`, `Dockerfile`, and `docker-compose.yml`.
+If you are building a user-facing feature, start in `src/api`.
+If you are modeling data, start in the Strapi admin panel.
+If you are fixing environment or integration problems, inspect Docker, `.env`, and `config`.

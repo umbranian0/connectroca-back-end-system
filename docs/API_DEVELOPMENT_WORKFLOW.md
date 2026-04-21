@@ -1,206 +1,172 @@
 # API Development Workflow
 
-## Goal of this document
+## Purpose
 
-This document explains a safe and repeatable workflow for implementing new backend features in Strapi.
-It is written for junior engineers who need a practical path from requirement to working endpoint.
+This document describes the recommended Strapi 5 workflow for implementing backend features in this project.
+It is designed to keep development predictable, incremental, and compatible with Strapi conventions.
 
-## Before you start coding
+## Before starting feature work
 
-Make sure the backend is already running and healthy.
-Confirm these two checks first:
+Confirm the environment first:
 
 - `http://localhost:1337/admin` loads
-- `http://localhost:1337/api/health` returns a successful response
+- `http://localhost:1337/api/health` returns `status: ok`
 
-If either check fails, stop and resolve the environment issue before building new features.
+If either fails, fix the local environment before changing application code.
 
-## Recommended implementation sequence
+## Recommended feature sequence
 
-### Step 1. Start from the frontend requirement
+### Step 1. Start from the frontend contract
 
-Before creating backend code, identify exactly what the frontend needs.
+Write down what the frontend actually needs:
 
-Examples:
+- list endpoint or detail endpoint
+- create, update, or delete behavior
+- required fields
+- authentication expectations
+- relation data that must be populated
 
-- a list of forum topics
-- a list of groups
-- a profile record for the logged-in user
-- a message feed for a group chat
+Do not model more data than the frontend can currently use.
 
-Write down:
+### Step 2. Decide whether generated Strapi CRUD is enough
 
-- endpoint purpose
-- expected fields
-- whether the endpoint is public or authenticated
-- whether the frontend needs list, detail, create, update, or delete operations
+Prefer generated Strapi CRUD first.
 
-### Step 2. Decide whether Strapi content types are enough
+Generated content types are usually enough when:
 
-Strapi can generate many CRUD endpoints automatically from content types.
-That means you should not write custom controllers unless you actually need custom behavior.
+- the feature is standard CRUD
+- the response shape is close to the stored data
+- relations are simple
+- custom business logic is limited
 
-Use generated content types when:
+Use custom routes, controllers, or services only when:
 
-- the feature is mostly standard CRUD
-- filtering and population rules are simple
-- business logic is minimal
+- the frontend needs a non-standard response
+- multiple models must be coordinated
+- custom validation is required
+- domain rules go beyond generated CRUD
 
-Use custom controllers or services when:
+### Step 3. Create the content type
 
-- the response shape is not standard
-- you need complex validation or orchestration
-- you need to combine data from multiple sources
+For a standard Strapi feature, start in the admin panel:
 
-### Step 3. Create the data model
+1. create the content type
+2. add the minimum required fields
+3. add relations only when needed
+4. save the model
 
-For each feature, define the minimum required model first.
-Avoid building a large schema before the frontend contract is clear.
-
-Examples of likely first entities for this project:
-
-- profile
-- group
-- forum-topic
-- resource
-- message
-
-When defining a model, think about:
-
-- field names
-- field types
-- required versus optional fields
-- relations between entities
-- whether timestamps are needed
-
-### Step 4. Add or generate the API feature
-
-Project API code belongs under `src/api`.
-Each feature should have its own folder.
-
-Examples:
+Then review the generated schema file under:
 
 ```text
-src/api/profile
-src/api/group
-src/api/forum-topic
-src/api/resource
-src/api/message
+src/api/<feature>/content-types/<feature>/schema.json
 ```
 
-Keep feature code grouped by responsibility.
-Do not scatter routes and controllers across unrelated folders.
+Commit schema changes as source code.
 
-### Step 5. Implement the smallest useful endpoint first
+### Step 4. Review permissions immediately
 
-Do not try to build the full backend domain in one change.
-Start with one endpoint that the frontend can immediately use.
+Do not postpone permission review.
 
-Good first examples:
+For every new feature, decide whether access should be:
 
-- `GET /api/groups`
-- `GET /api/resources`
-- `GET /api/forum-topics`
+- public
+- authenticated
+- role-restricted
 
-This reduces debugging scope and helps validate the integration early.
+The `users-permissions` plugin is already installed and should be used intentionally.
 
-### Step 6. Test the endpoint directly
+### Step 5. Test generated CRUD before writing custom logic
 
-Before connecting the frontend, test the endpoint on its own.
-
-Possible methods:
-
-- open the route in the browser for simple GET requests
-- use Postman or Insomnia
-- use the Strapi admin panel to inspect stored content
+After modeling the content type, test the generated endpoint directly.
 
 Check:
 
-- response status code
-- response body shape
-- field names
-- whether relations are present when needed
+- status code
+- response shape
+- pagination behavior
+- relation population
+- permission behavior
 
-### Step 7. Connect the frontend only after the endpoint is stable
+If generated CRUD already satisfies the need, stop there.
+That is the preferred Strapi path.
 
-A common junior mistake is to debug frontend and backend problems at the same time.
-Do not do that.
+### Step 6. Add custom logic in services first
 
-First confirm:
+When generated CRUD is not enough, add custom logic in a service before expanding controllers.
 
-- backend endpoint works independently
-- CORS is correct
-- response shape matches the frontend contract
+Service responsibilities:
 
-Then connect the frontend.
+- domain rules
+- orchestration across models
+- reusable calculations
+- reusable transformations
 
-## Suggested first features for this project
+Controller responsibilities:
 
-Given the frontend that already exists, the backend will likely need these domains first:
+- receive input
+- call the service
+- return the response
 
-1. `profiles`
-2. `groups`
-3. `forum-topics`
-4. `resources`
-5. `messages`
+Keep controllers small.
 
-A practical order is:
+### Step 7. Add custom routes only when the default routes are insufficient
+
+Examples of justified custom routes:
+
+- dashboard-specific aggregate data
+- custom search behavior
+- workflow actions that are not standard CRUD
+- feed or timeline endpoints combining multiple entities
+
+If the default generated route works, prefer it.
+
+### Step 8. Test the endpoint outside the frontend
+
+Before integrating a new API into the frontend, test it independently:
+
+- browser for simple GET endpoints
+- Postman or Insomnia
+- Strapi admin panel for content verification
+
+Never debug frontend state and backend behavior at the same time if you can isolate them separately.
+
+## Suggested first project features
+
+Based on the frontend that already exists, the likely first content domains are:
 
 1. profiles
 2. groups
 3. resources
-4. forum topics
+4. forum-topics
 5. messages
 
-This order helps because profile and group data often support multiple screens.
+Recommended order:
 
-## Authentication and permissions
+1. profiles
+2. groups
+3. resources
+4. forum-topics
+5. messages
 
-The project already depends on `@strapi/plugin-users-permissions`.
-That plugin should be used for:
+This order keeps the earliest integrations focused on the simplest high-value entities.
 
-- authentication
-- roles
-- protected routes
-- user-related permissions
+## Practical Strapi conventions
 
-Do not mark everything public by default.
-For each endpoint, decide whether it should be:
+Use these conventions consistently:
 
-- public
-- authenticated
-- limited to a role
+- singular feature names in schema folders
+- plural API endpoints when generated by Strapi
+- services for reusable logic
+- thin controllers
+- schema changes committed with the related feature work
 
-## How to keep the API junior-friendly and maintainable
+## Definition of done
 
-Use these rules:
+A backend feature is ready when:
 
-- choose clear entity names
-- keep endpoint behavior predictable
-- avoid unnecessary custom logic
-- start with minimal fields
-- document the API contract in pull requests or feature notes
-- test one feature at a time
-
-## When to create custom logic
-
-Custom logic is justified when standard CRUD is not enough.
-Examples:
-
-- returning a dashboard-specific payload
-- computing derived values
-- enforcing custom business rules
-- combining data from multiple models
-
-If standard Strapi CRUD already solves the problem, prefer that first.
-
-## Definition of done for a new feature
-
-A backend feature should usually be considered ready when:
-
-- the model is defined
-- the endpoint starts correctly
+- the content model is stable enough for the frontend need
+- permissions are reviewed
 - the endpoint returns the expected shape
-- permissions are correct
-- the frontend can consume it without ad hoc backend fixes
-- the change is documented clearly enough for the next engineer
+- custom logic lives in services rather than bloated controllers
+- the feature works independently of the frontend
+- the relevant documentation is updated if setup or usage changed
