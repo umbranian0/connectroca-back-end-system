@@ -28,6 +28,12 @@ Write down what the frontend actually needs:
 
 Do not model more data than the frontend can currently use.
 
+Before choosing the entities, review:
+
+```text
+docs/ENTITY_RELATIONSHIP_BLUEPRINT.md
+```
+
 ### Step 2. Decide whether generated Strapi CRUD is enough
 
 Prefer generated Strapi CRUD first.
@@ -54,6 +60,8 @@ For a standard Strapi feature, start in the admin panel:
 2. add the minimum required fields
 3. add relations only when needed
 4. save the model
+
+If a relation needs its own fields such as membership role or join date, stop and create a dedicated join collection type instead of a direct many-to-many relation.
 
 Then review the generated schema file under:
 

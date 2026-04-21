@@ -49,6 +49,11 @@ Defines the local development stack:
 Defines the Strapi development image.
 Dependencies are installed with `npm ci` during image build.
 
+### `scripts/`
+
+Small project helper scripts.
+The main entrypoint is `scripts/setup-local.mjs`.
+
 ## Configuration layer
 
 Everything in `config/` affects the whole backend application.
@@ -116,6 +121,11 @@ src/api/<feature>/
 
 Generated Strapi content-type schema.
 If you create or edit a content type through Strapi, this file should be committed.
+
+### `src/api/README.md`
+
+Quick orientation file for the feature area.
+Use it to confirm the next expected modules and the relation-aware development rules.
 
 ### `src/api/<feature>/controllers`
 

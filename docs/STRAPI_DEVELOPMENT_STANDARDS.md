@@ -28,6 +28,25 @@ When a new feature is requested:
 For standard features, create the model first in the Strapi admin panel.
 That lets Strapi generate the base API and schema files automatically.
 
+## Relationship rule
+
+Use a direct relation only when the relation itself has no business data.
+
+If the relation needs fields such as:
+
+- `role`
+- `status`
+- `joinedAt`
+- `isOwner`
+
+then create a dedicated join collection type instead of a plain many-to-many relation.
+
+Examples:
+
+- `group-membership` between `profile` and `group`
+- a future `bookmark` entity between `profile` and `resource`
+- a future `conversation-participant` entity for direct messages
+
 ## Where generated model files live
 
 After a content-type change, Strapi writes schema files under:

@@ -20,9 +20,9 @@ cd connectroca-back-end-system
 
 ## Environment setup
 
-### `Copy-Item .env.example .env`
+### `npm run setup:local`
 
-Creates the local runtime configuration file from the committed template.
+Creates `.env` from `.env.example` when it does not exist and prints the correct next steps.
 
 Use this when:
 
@@ -95,6 +95,13 @@ Starts Strapi in development mode on the host machine.
 
 Builds the Strapi admin panel.
 
+### `npm run check`
+
+Runs the standard host-machine validation sequence:
+
+- `npm run typecheck`
+- `npm run build`
+
 ### `npm run start`
 
 Starts Strapi in non-development mode.
@@ -106,6 +113,10 @@ Opens the Strapi console.
 ### `npm run typecheck`
 
 Runs TypeScript type checking with no emitted files.
+
+### `npm run docker:check`
+
+Validates the Docker Compose file without starting the stack.
 
 ### `npm run strapi -- help`
 
@@ -156,7 +167,7 @@ docker compose down -v
 ## Recommended first-run sequence
 
 ```powershell
-Copy-Item .env.example .env
+npm run setup:local
 docker compose up --build
 ```
 
@@ -197,3 +208,11 @@ docker compose up --build
 ```
 
 The container image installs dependencies during build, which is the intended reproducible workflow.
+
+## Entity-modeling rule
+
+Before creating the first real business module, read:
+
+```text
+docs/ENTITY_RELATIONSHIP_BLUEPRINT.md
+```

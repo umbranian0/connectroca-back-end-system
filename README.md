@@ -31,7 +31,7 @@ cd connectroca-back-end-system
 
 This is the preferred team workflow:
 
-1. Copy `.env.example` to `.env`.
+1. Initialize local files with one command.
 2. Start the stack with Docker.
 3. Wait until Strapi reports `Strapi started successfully`.
 4. Open the admin panel.
@@ -40,7 +40,7 @@ This is the preferred team workflow:
 Commands:
 
 ```powershell
-Copy-Item .env.example .env
+npm run setup:local
 docker compose up --build
 ```
 
@@ -65,9 +65,15 @@ Commands:
 
 ```powershell
 npm ci
+npm run check
+npm run develop
+```
+
+If you want the individual checks instead:
+
+```powershell
 npm run typecheck
 npm run build
-npm run develop
 ```
 
 Use `npm ci` instead of `npm install` when working from the committed lockfile.
@@ -92,16 +98,22 @@ That keeps dependency resolution reproducible across the team.
 
 ### npm scripts
 
+- `npm run setup:local`
+  Creates `.env` from `.env.example` when needed and prints the next steps.
 - `npm run develop`
   Starts Strapi in development mode on the host machine.
 - `npm run build`
   Builds the Strapi admin panel.
+- `npm run check`
+  Runs the standard host-machine validation sequence.
 - `npm run start`
   Starts Strapi in non-development mode.
 - `npm run console`
   Opens the Strapi console.
 - `npm run typecheck`
   Runs TypeScript type checking without emitting files.
+- `npm run docker:check`
+  Validates the compose file without starting containers.
 - `npm run docker:up`
   Shortcut for `docker compose up --build`.
 - `npm run docker:down`
@@ -129,10 +141,14 @@ Important files and folders:
   Local development stack with PostgreSQL and Strapi.
 - `Dockerfile`
   Development image that installs dependencies with `npm ci`.
+- `scripts/`
+  Small helper scripts that simplify repeated local tasks.
 - `config/`
   Cross-cutting Strapi runtime configuration.
 - `src/api/`
   Project feature modules.
+- `src/api/README.md`
+  Short guide for where new API modules should go.
 - `types/generated/`
   Generated Strapi TypeScript definitions.
 - `public/uploads/`
@@ -148,6 +164,7 @@ Use these rules for new backend work:
 - Use the Strapi admin panel for content modeling and permissions first.
 - Commit generated schema files after content-type changes.
 - Review public permissions explicitly before frontend integration.
+- Read `docs/ENTITY_RELATIONSHIP_BLUEPRINT.md` before creating the first business entities.
 
 The default place for project features is:
 
@@ -175,16 +192,18 @@ Read these in order:
 3. `docs/COMMAND_REFERENCE.md`
 4. `docs/PROJECT_STRUCTURE.md`
 5. `docs/STRAPI_DEVELOPMENT_STANDARDS.md`
-6. `docs/API_DEVELOPMENT_WORKFLOW.md`
-7. `docs/FUTURE_DEVELOPMENT_AREAS.md`
-8. `docs/TROUBLESHOOTING.md`
+6. `docs/ENTITY_RELATIONSHIP_BLUEPRINT.md`
+7. `docs/API_DEVELOPMENT_WORKFLOW.md`
+8. `docs/FUTURE_DEVELOPMENT_AREAS.md`
+9. `docs/TROUBLESHOOTING.md`
 
 If you are in the monorepo layout, `LOCAL_STRAPI_SETUP.md` lives at the monorepo root.
 
 ## Practical next steps
 
 1. Bring the stack up and confirm `/api/health` works.
-2. Create the first required content type in Strapi.
-3. Commit the generated schema files.
-4. Add custom services only where generated CRUD is not enough.
-5. Integrate one frontend screen at a time against stable endpoints.
+2. Read `docs/ENTITY_RELATIONSHIP_BLUEPRINT.md`.
+3. Create the first required content type in Strapi.
+4. Commit the generated schema files.
+5. Add custom services only where generated CRUD is not enough.
+6. Integrate one frontend screen at a time against stable endpoints.

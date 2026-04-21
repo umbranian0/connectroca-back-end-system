@@ -66,7 +66,7 @@ Use one of the paths shown above.
 ### Step 2. Create the local environment file
 
 ```powershell
-Copy-Item .env.example .env
+npm run setup:local
 ```
 
 ### Step 3. Start the backend stack
@@ -171,9 +171,15 @@ npm ci
 Then use:
 
 ```powershell
+npm run check
+npm run develop
+```
+
+If you need the individual host-machine commands:
+
+```powershell
 npm run typecheck
 npm run build
-npm run develop
 ```
 
 ## Strapi development good practices used in this project
@@ -215,6 +221,7 @@ Do not leave new routes public by accident.
 Use:
 
 - `npm ci` on the host machine
+- `npm run setup:local` for first local initialization
 - `docker compose up --build` for Docker rebuilds
 
 ## Where future development should happen
@@ -227,11 +234,14 @@ src/api
 
 Likely first modules:
 
-- `profiles`
-- `groups`
+- `profile`
+- `group`
+- `group-membership`
 - `resources`
-- `forum-topics`
-- `messages`
+- `forum-category`
+- `forum-topic`
+- `forum-post`
+- `group-message`
 
 ### Content modeling and permissions
 
@@ -271,9 +281,10 @@ Read these files in order:
 3. `docs/COMMAND_REFERENCE.md`
 4. `docs/PROJECT_STRUCTURE.md`
 5. `docs/STRAPI_DEVELOPMENT_STANDARDS.md`
-6. `docs/API_DEVELOPMENT_WORKFLOW.md`
-7. `docs/FUTURE_DEVELOPMENT_AREAS.md`
-8. `docs/TROUBLESHOOTING.md`
+6. `docs/ENTITY_RELATIONSHIP_BLUEPRINT.md`
+7. `docs/API_DEVELOPMENT_WORKFLOW.md`
+8. `docs/FUTURE_DEVELOPMENT_AREAS.md`
+9. `docs/TROUBLESHOOTING.md`
 
 ## Troubleshooting note
 

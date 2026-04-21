@@ -10,6 +10,12 @@ It is intended to prevent junior engineers from editing the wrong layer of the a
 Most project-specific backend work should happen in `src/api`.
 That is the default development area for business features.
 
+Before creating those modules, read:
+
+```text
+docs/ENTITY_RELATIONSHIP_BLUEPRINT.md
+```
+
 ## Area 1. `src/api`
 
 This is the primary feature-development area.
@@ -17,11 +23,14 @@ Use it for backend modules that represent real application features.
 
 Expected near-term modules for this project:
 
-- `src/api/profiles`
-- `src/api/groups`
-- `src/api/forum-topics`
-- `src/api/resources`
-- `src/api/messages`
+- `src/api/profile`
+- `src/api/group`
+- `src/api/group-membership`
+- `src/api/resource`
+- `src/api/forum-category`
+- `src/api/forum-topic`
+- `src/api/forum-post`
+- `src/api/group-message`
 
 Work that belongs here:
 
@@ -33,6 +42,10 @@ Work that belongs here:
 - custom business logic
 
 If a change is about a real user-facing feature, it will usually belong here.
+
+Important relation rule:
+
+- if the relationship has business fields such as `role`, `status`, or `joinedAt`, model it as its own collection type
 
 ## Area 2. Strapi admin panel
 
@@ -93,17 +106,20 @@ Do not put personal machine values or secrets directly into `.env.example` unles
 
 A sensible initial order is:
 
-1. `profiles`
-2. `groups`
-3. `resources`
-4. `forum-topics`
-5. `messages`
+1. `profile`
+2. `group`
+3. `group-membership`
+4. `resource`
+5. `forum-category`
+6. `forum-topic`
+7. `forum-post`
+8. `group-message`
 
 Reasoning:
 
 - profile and group data support multiple screens
-- resources and forum topics are relatively straightforward content-driven features
-- messages often require more careful modeling and permission design
+- resources and forum entities are relatively straightforward content-driven features
+- group messages depend on stable user and group relations first
 
 ## What should not be the default development area
 
