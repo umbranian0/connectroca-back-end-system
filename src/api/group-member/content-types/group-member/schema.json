@@ -1,0 +1,37 @@
+{
+  "kind": "collectionType",
+  "collectionName": "group_members",
+  "info": {
+    "singularName": "group-member",
+    "pluralName": "group-members",
+    "displayName": "Group Member",
+    "description": "Join entity for users in groups"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "role": {
+      "type": "enumeration",
+      "enum": [
+        "member",
+        "admin"
+      ],
+      "default": "member"
+    },
+    "joinDate": {
+      "type": "datetime"
+    },
+    "group": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::group.group"
+    },
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    }
+  }
+}

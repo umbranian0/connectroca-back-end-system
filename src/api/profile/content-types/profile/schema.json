@@ -1,0 +1,61 @@
+{
+  "kind": "collectionType",
+  "collectionName": "profiles",
+  "info": {
+    "singularName": "profile",
+    "pluralName": "profiles",
+    "displayName": "Profile",
+    "description": "Application profile data linked to a Strapi user"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "displayName": {
+      "type": "string",
+      "required": true
+    },
+    "course": {
+      "type": "string"
+    },
+    "year": {
+      "type": "integer",
+      "min": 1
+    },
+    "bio": {
+      "type": "text"
+    },
+    "level": {
+      "type": "integer",
+      "default": 1,
+      "min": 1
+    },
+    "points": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "registrationDate": {
+      "type": "date"
+    },
+    "profilePhoto": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "badges": {
+      "type": "json"
+    },
+    "interests": {
+      "type": "json"
+    },
+    "user": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
+    }
+  }
+}

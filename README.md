@@ -1,209 +1,176 @@
-# ConnectTroca API Local Workspace
+﻿# ConnectTroca Backend (Strapi 5) - Student + Production Guide
 
-## Purpose
+This is the backend repository used by the frontend project.
 
-This folder contains the standalone Strapi 5 backend used for local project development.
-It is the backend that the team should change when implementing API features for the frontend.
+## What this backend already includes
 
-Stack:
+- Strapi collections matching the project ERD:
+  - `profiles`
+  - `areas`
+  - `groups`
+  - `group-members`
+  - `user-areas`
+  - `materials`
+  - `topics`
+  - `posts`
+  - `comments`
+  - `likes`
+- Automatic bootstrap on startup:
+  - Role permission setup (public read, authenticated CRUD)
+  - Demo data seeding for immediate frontend visualization
 
-- Strapi `5.42.1`
-- PostgreSQL `16`
-- Docker Compose for the standard local workflow
-- Node `20.20.2` for host-machine commands
+## Prerequisites (each student machine)
 
-## How to enter the project
+1. Docker Desktop (running)
+2. Git
+3. Optional for host mode: Node.js 20+
 
-If you already have the local monorepo folder:
+## Local development setup
 
-```powershell
-cd "C:\Users\vasil\Documents\Aulas\projeto integrado 2\backend_conectra\local-dev\connecttroca-api"
-```
-
-If you are using the published standalone backend repository:
-
-```powershell
-git clone https://github.com/umbranian0/connectroca-back-end-system.git
-cd connectroca-back-end-system
-```
-
-## Recommended local development workflow
-
-This is the preferred team workflow:
-
-1. Initialize local files with one command.
-2. Start the stack with Docker.
-3. Wait until Strapi reports `Strapi started successfully`.
-4. Open the admin panel.
-5. Validate the public health endpoint.
-
-Commands:
+### 1. Open project folder
 
 ```powershell
-npm run setup:local
-docker compose up --build
+cd "C:\Users\vasil\Documents\Aulas\projeto integrado 2\backend_conectra\connectroca-back-end-system"
 ```
 
-URLs:
+### 2. Configure environment (first run only)
 
-- Admin panel: `http://localhost:1337/admin`
-- API base URL: `http://localhost:1337`
-- Health endpoint: `http://localhost:1337/api/health`
+```powershell
+Copy-Item .env.example .env
+```
 
-## Host-machine workflow
+### 3. Start backend
 
-Use the host-machine workflow only when you need direct `npm` debugging outside Docker.
+```powershell
+docker compose up --build -d
+```
 
-Requirements:
+### 4. Validate health endpoint
 
-- Node `20.20.2` or another Node `20+` release
-- npm `10+`
+```powershell
+curl http://localhost:1337/api/health
+```
 
-The project includes `.nvmrc` to make the expected Node version explicit.
+### 5. Open Strapi admin
 
-Commands:
+- `http://localhost:1337/admin`
+
+## Demo credentials (seeded)
+
+- Email: `integration.user@example.com`
+- Password: `Integration123!`
+
+## Vercel ecosystem preparation (important)
+
+Strapi itself is not usually deployed on Vercel for production. Recommended architecture:
+
+- Frontend on Vercel
+- Strapi backend on a Node-friendly host (Render, Railway, Fly.io, VPS, etc.)
+
+This repository is already prepared for that flow.
+
+## Production env template
+
+Use the file:
+
+- `.env.production.example`
+
+It includes production placeholders for:
+
+- public backend URL
+- database credentials
+- JWT/app secrets
+- CORS for Vercel domains
+
+## CORS support for Vercel
+
+`config/middlewares.ts` now supports both:
+
+1. Explicit allowed origins via `CORS_ORIGIN`
+2. Optional automatic allowance for `https://*.vercel.app` via:
+
+```env
+CORS_ALLOW_VERCEL_PREVIEWS=true
+```
+
+Recommended production setup:
+
+- Add your production frontend domain(s) to `CORS_ORIGIN`
+- Enable `CORS_ALLOW_VERCEL_PREVIEWS=true` for preview deployments
+
+## Minimum production env values to set
+
+- `NODE_ENV=production`
+- `PUBLIC_URL=https://your-backend-domain`
+- `APP_KEYS` (4 strong values)
+- `JWT_SECRET`
+- `ADMIN_JWT_SECRET`
+- `API_TOKEN_SALT`
+- `TRANSFER_TOKEN_SALT`
+- `ENCRYPTION_KEY`
+- `DATABASE_*` values
+- `CORS_ORIGIN`
+- `CORS_ALLOW_VERCEL_PREVIEWS`
+
+## Daily usage commands
+
+Start existing containers:
+
+```powershell
+docker compose up -d
+```
+
+Stop containers:
+
+```powershell
+docker compose down
+```
+
+Logs:
+
+```powershell
+docker compose logs -f strapi
+```
+
+## Full reset (destructive)
+
+```powershell
+docker compose down -v
+docker compose up --build -d
+```
+
+## Host-machine mode (optional)
 
 ```powershell
 npm ci
-npm run check
 npm run develop
 ```
 
-If you want the individual checks instead:
+## Beginner safety rules
 
-```powershell
-npm run typecheck
-npm run build
-```
+1. Do not edit `types/generated/*` manually.
+2. Keep backend custom code inside `src/api/*` and `src/index.ts`.
+3. After schema changes, restart backend and test endpoint responses.
 
-Use `npm ci` instead of `npm install` when working from the committed lockfile.
-That keeps dependency resolution reproducible across the team.
+## Where each type of change should go
 
-## Command summary
+- Schema: `src/api/<name>/content-types/<name>/schema.json`
+- Controller: `src/api/<name>/controllers/<name>.ts`
+- Routes: `src/api/<name>/routes/<name>.ts`
+- Service logic: `src/api/<name>/services/<name>.ts`
+- Startup automation (roles/seed): `src/index.ts`
 
-### Docker
+## Troubleshooting quick checks
 
-- `docker compose up --build`
-  Rebuilds the Strapi image when needed and starts PostgreSQL plus Strapi.
-- `docker compose down`
-  Stops the stack and keeps volumes.
-- `docker compose down -v`
-  Stops the stack and removes named volumes, including the local database.
-- `docker compose ps`
-  Shows current container status.
-- `docker compose logs -f strapi`
-  Streams Strapi logs.
-- `docker compose logs -f postgres`
-  Streams PostgreSQL logs.
+If frontend has no data:
 
-### npm scripts
+1. Check `/api/health` returns `200`.
+2. Check Strapi logs for bootstrap/CORS errors.
+3. Validate at least one endpoint, e.g. `/api/topics?populate=*`.
+4. Confirm frontend `VITE_STRAPI_URL` points to this backend.
 
-- `npm run setup:local`
-  Creates `.env` from `.env.example` when needed and prints the next steps.
-- `npm run develop`
-  Starts Strapi in development mode on the host machine.
-- `npm run build`
-  Builds the Strapi admin panel.
-- `npm run check`
-  Runs the standard host-machine validation sequence.
-- `npm run start`
-  Starts Strapi in non-development mode.
-- `npm run console`
-  Opens the Strapi console.
-- `npm run typecheck`
-  Runs TypeScript type checking without emitting files.
-- `npm run docker:check`
-  Validates the compose file without starting containers.
-- `npm run docker:up`
-  Shortcut for `docker compose up --build`.
-- `npm run docker:down`
-  Shortcut for `docker compose down`.
-- `npm run docker:logs`
-  Shortcut for `docker compose logs -f strapi`.
-- `npm run docker:ps`
-  Shortcut for `docker compose ps`.
-- `npm run docker:reset`
-  Shortcut for `docker compose down -v`.
+If authentication fails:
 
-## Project layout
-
-Important files and folders:
-
-- `package.json`
-  Defines project scripts and runtime dependencies.
-- `package-lock.json`
-  Locks exact dependency versions for reproducible installs.
-- `.nvmrc`
-  Declares the expected host Node version.
-- `.env.example`
-  Team-level template for runtime configuration.
-- `docker-compose.yml`
-  Local development stack with PostgreSQL and Strapi.
-- `Dockerfile`
-  Development image that installs dependencies with `npm ci`.
-- `scripts/`
-  Small helper scripts that simplify repeated local tasks.
-- `config/`
-  Cross-cutting Strapi runtime configuration.
-- `src/api/`
-  Project feature modules.
-- `src/api/README.md`
-  Short guide for where new API modules should go.
-- `types/generated/`
-  Generated Strapi TypeScript definitions.
-- `public/uploads/`
-  Persistent uploaded files.
-
-## Strapi development conventions
-
-Use these rules for new backend work:
-
-- Start with a content type when the requirement is standard CRUD.
-- Keep controllers thin.
-- Put business logic in services, not controllers.
-- Use the Strapi admin panel for content modeling and permissions first.
-- Commit generated schema files after content-type changes.
-- Review public permissions explicitly before frontend integration.
-- Read `docs/ENTITY_RELATIONSHIP_BLUEPRINT.md` before creating the first business entities.
-
-The default place for project features is:
-
-```text
-src/api/<feature>
-```
-
-Typical feature layout:
-
-```text
-src/api/<feature>/
-  content-types/<feature>/schema.json
-  controllers/
-  routes/
-  services/
-  policies/
-```
-
-## Documentation map
-
-Read these in order:
-
-1. `README.md`
-2. `LOCAL_STRAPI_SETUP.md`
-3. `docs/COMMAND_REFERENCE.md`
-4. `docs/PROJECT_STRUCTURE.md`
-5. `docs/STRAPI_DEVELOPMENT_STANDARDS.md`
-6. `docs/ENTITY_RELATIONSHIP_BLUEPRINT.md`
-7. `docs/API_DEVELOPMENT_WORKFLOW.md`
-8. `docs/FUTURE_DEVELOPMENT_AREAS.md`
-9. `docs/TROUBLESHOOTING.md`
-
-If you are in the monorepo layout, `LOCAL_STRAPI_SETUP.md` lives at the monorepo root.
-
-## Practical next steps
-
-1. Bring the stack up and confirm `/api/health` works.
-2. Read `docs/ENTITY_RELATIONSHIP_BLUEPRINT.md`.
-3. Create the first required content type in Strapi.
-4. Commit the generated schema files.
-5. Add custom services only where generated CRUD is not enough.
-6. Integrate one frontend screen at a time against stable endpoints.
+1. Verify JWT-related env vars are present.
+2. Restart backend service.
+3. Retry with test credentials above.

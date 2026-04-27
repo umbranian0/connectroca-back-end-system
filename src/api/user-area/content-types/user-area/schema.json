@@ -1,0 +1,32 @@
+{
+  "kind": "collectionType",
+  "collectionName": "user_areas",
+  "info": {
+    "singularName": "user-area",
+    "pluralName": "user-areas",
+    "displayName": "User Area",
+    "description": "Join entity for user interests per area"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "interest": {
+      "type": "string"
+    },
+    "joinDate": {
+      "type": "datetime"
+    },
+    "area": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::area.area"
+    },
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    }
+  }
+}
