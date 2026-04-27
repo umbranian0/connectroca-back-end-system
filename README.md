@@ -1,10 +1,10 @@
-﻿# ConnectTroca Backend (Strapi 5) - Student + Production Guide
+# ConnectTroca Backend (Strapi 5) - Student + Deployment Guide
 
-This is the backend repository used by the frontend project.
+This repository is the backend API consumed by the ConnectTroca frontend.
 
-## What this backend already includes
+## What this backend includes
 
-- Strapi collections matching the project ERD:
+- Strapi collections aligned with the ERD:
   - `profiles`
   - `areas`
   - `groups`
@@ -15,11 +15,11 @@ This is the backend repository used by the frontend project.
   - `posts`
   - `comments`
   - `likes`
-- Automatic bootstrap on startup:
-  - Role permission setup (public read, authenticated CRUD)
+- Bootstrap automation on startup:
+  - Role permission setup (public read + authenticated CRUD)
   - Demo data seeding for immediate frontend visualization
 
-## Prerequisites (each student machine)
+## Prerequisites (student machine)
 
 1. Docker Desktop (running)
 2. Git
@@ -60,57 +60,137 @@ curl http://localhost:1337/api/health
 - Email: `integration.user@example.com`
 - Password: `Integration123!`
 
-## Vercel ecosystem preparation (important)
+## Heroku deployment (recommended for backend production)
 
-Strapi itself is not usually deployed on Vercel for production. Recommended architecture:
+Full variable checklist: `DEPLOYMENT_ENVIRONMENT.md`
 
-- Frontend on Vercel
-- Strapi backend on a Node-friendly host (Render, Railway, Fly.io, VPS, etc.)
+This project is prepared for Heroku with:
 
-This repository is already prepared for that flow.
+- `Procfile` (`web: npm run start`)
+- `heroku-postbuild` script in `package.json`
+- `DATABASE_URL` support in `config/database.ts`
+- Heroku env templates: `.env.heroku.example` and `.env.production.example`
 
-## Production env template
+### 1. Create Heroku app and Postgres add-on
 
-Use the file:
-
-- `.env.production.example`
-
-It includes production placeholders for:
-
-- public backend URL
-- database credentials
-- JWT/app secrets
-- CORS for Vercel domains
-
-## CORS support for Vercel
-
-`config/middlewares.ts` now supports both:
-
-1. Explicit allowed origins via `CORS_ORIGIN`
-2. Optional automatic allowance for `https://*.vercel.app` via:
-
-```env
-CORS_ALLOW_VERCEL_PREVIEWS=true
+```bash
+heroku login
+heroku create <your-backend-app-name>
+heroku addons:create heroku-postgresql:essential-0 -a <your-backend-app-name>
 ```
 
-Recommended production setup:
+### 2. Confirm Heroku provided `DATABASE_URL`
 
-- Add your production frontend domain(s) to `CORS_ORIGIN`
-- Enable `CORS_ALLOW_VERCEL_PREVIEWS=true` for preview deployments
+```bash
+heroku config:get DATABASE_URL -a <your-backend-app-name>
+```
 
-## Minimum production env values to set
+Do not commit database credentials in git. Keep secrets only in Heroku config vars.
 
-- `NODE_ENV=production`
-- `PUBLIC_URL=https://your-backend-domain`
-- `APP_KEYS` (4 strong values)
-- `JWT_SECRET`
-- `ADMIN_JWT_SECRET`
-- `API_TOKEN_SALT`
-- `TRANSFER_TOKEN_SALT`
-- `ENCRYPTION_KEY`
-- `DATABASE_*` values
-- `CORS_ORIGIN`
-- `CORS_ALLOW_VERCEL_PREVIEWS`
+### 3. Set required backend config vars
+
+```bash
+heroku config:set \
+  NODE_ENV=production \
+  HOST=0.0.0.0 \
+  IS_PROXIED=true \
+  HEROKU_APP_NAME=<your-backend-app-name> \
+  PUBLIC_URL=https://<your-backend-app-name>.herokuapp.com \
+  ADMIN_URL=/admin \
+  DATABASE_CLIENT=postgres \
+  DATABASE_SSL=true \
+  DATABASE_SSL_REJECT_UNAUTHORIZED=false \
+  CORS_ORIGIN=https://connectroca-front-end-system.vercel.app,http://localhost:5173,http://127.0.0.1:5173 \
+  FRONTEND_DEVELOP_URL=https://connectroca-front-end-system.vercel.app \
+  CORS_ALLOW_VERCEL_PREVIEWS=true \
+  STRAPI_TELEMETRY_DISABLED=true \
+  -a <your-backend-app-name>
+```
+
+Set security secrets (generate strong random values):
+
+```bash
+heroku config:set \
+  APP_KEYS="<k1>,<k2>,<k3>,<k4>" \
+  API_TOKEN_SALT="<api-token-salt>" \
+  ADMIN_JWT_SECRET="<admin-jwt-secret>" \
+  TRANSFER_TOKEN_SALT="<transfer-token-salt>" \
+  JWT_SECRET="<jwt-secret>" \
+  ENCRYPTION_KEY="<encryption-key>" \
+  -a <your-backend-app-name>
+```
+
+Important:
+
+- If `DATABASE_URL` exists, the app uses it automatically.
+- `DATABASE_SSL` defaults to `true` when `DATABASE_URL` is present.
+- If you also want component-style DB vars (`DATABASE_HOST`, `DATABASE_PORT`, `DATABASE_NAME`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`) synced in Heroku, run:
+
+```bash
+npm run heroku:sync-db-vars -- <your-backend-app-name>
+```
+
+### 4. Deploy to Heroku
+
+```bash
+git push heroku main
+```
+
+If your branch is `master`:
+
+```bash
+git push heroku master
+```
+
+### 5. Verify deployment
+
+```bash
+heroku open -a <your-backend-app-name>
+heroku open -a <your-backend-app-name> --path /admin
+curl https://<your-backend-app-name>.herokuapp.com/api/health
+```
+
+If admin is inaccessible, check logs:
+
+```bash
+heroku logs --tail -a <your-backend-app-name>
+```
+
+## Vercel frontend + Heroku backend
+
+Recommended architecture:
+
+- Frontend on Vercel
+- Backend (Strapi) on Heroku
+
+Set frontend variable (`connectroca-front-end-system`) to the backend URL:
+
+- `VITE_STRAPI_URL=https://<your-backend-app-name>.herokuapp.com`
+
+## CORS support
+
+`config/middlewares.ts` supports both:
+
+1. Explicit allowed origins through `CORS_ORIGIN`
+2. Optional wildcard for Vercel preview domains through `CORS_ALLOW_VERCEL_PREVIEWS=true`
+
+It also includes safe defaults for hybrid usage:
+
+- Local frontend origins (`http://localhost:5173`, `http://127.0.0.1:5173`, `http://localhost:3000`, `http://127.0.0.1:3000`)
+- Develop frontend origin from `FRONTEND_DEVELOP_URL` (defaults to `https://connectroca-front-end-system.vercel.app`)
+
+## Runtime modes (local, develop, cross)
+
+1. Full local (`frontend local` + `backend local`):
+   - Use `.env.example`
+   - Keep `DATABASE_URL` empty and local Postgres settings
+2. Full develop (`frontend Vercel` + `backend Heroku`):
+   - Use Heroku config with `.env.heroku.example`
+   - Set `PUBLIC_URL` to Heroku URL and keep `DATABASE_SSL=true`
+3. Cross (`frontend local` -> `backend Heroku`):
+   - Backend must allow local frontend origins in CORS
+   - Keep `CORS_ORIGIN` including both `https://connectroca-front-end-system.vercel.app` and local origins
+   - Keep `FRONTEND_DEVELOP_URL=https://connectroca-front-end-system.vercel.app`
 
 ## Daily usage commands
 
@@ -171,6 +251,10 @@ If frontend has no data:
 
 If authentication fails:
 
-1. Verify JWT-related env vars are present.
-2. Restart backend service.
-3. Retry with test credentials above.
+1. Verify JWT-related env vars are present in Heroku.
+2. Restart backend dyno (`heroku ps:restart -a <your-backend-app-name>`).
+3. Retry login/register from frontend.
+
+
+
+

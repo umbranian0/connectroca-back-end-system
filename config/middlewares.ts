@@ -1,4 +1,4 @@
-﻿import type { Core } from '@strapi/strapi';
+import type { Core } from '@strapi/strapi';
 
 const DEFAULT_CORS_ORIGINS = [
   'http://localhost:5173',
@@ -10,12 +10,22 @@ const DEFAULT_CORS_ORIGINS = [
 const VERCEL_ORIGIN_REGEX = /^https:\/\/([a-z0-9-]+\.)*vercel\.app$/i;
 
 function normalizeOrigins(origins: string[]) {
-  return origins.map((origin) => origin.trim()).filter(Boolean);
+  return [...new Set(origins.map((origin) => origin.trim()).filter(Boolean))];
 }
 
 const middlewaresConfig = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Middlewares => {
-  const configuredOrigins = normalizeOrigins(env.array('CORS_ORIGIN', DEFAULT_CORS_ORIGINS));
-  const allowVercelPreviewOrigins = env.bool('CORS_ALLOW_VERCEL_PREVIEWS', false);
+  const frontendDevelopUrl = env(
+    'FRONTEND_DEVELOP_URL',
+    'https://connectroca-front-end-system.vercel.app',
+  );
+
+  const configuredOrigins = normalizeOrigins([
+    ...DEFAULT_CORS_ORIGINS,
+    frontendDevelopUrl,
+    ...env.array('CORS_ORIGIN', []),
+  ]);
+
+  const allowVercelPreviewOrigins = env.bool('CORS_ALLOW_VERCEL_PREVIEWS', true);
 
   return [
     'strapi::logger',

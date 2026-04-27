@@ -12,13 +12,15 @@
     "start": "strapi start",
     "strapi": "strapi",
     "setup:local": "node ./scripts/setup-local.mjs",
+    "heroku:sync-db-vars": "node ./scripts/sync-heroku-db-vars.mjs",
     "typecheck": "tsc --noEmit",
     "docker:check": "docker compose config",
     "docker:up": "docker compose up --build",
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f strapi",
     "docker:ps": "docker compose ps",
-    "docker:reset": "docker compose down -v"
+    "docker:reset": "docker compose down -v",
+    "heroku-postbuild": "npm run build"
   },
   "dependencies": {
     "@strapi/plugin-users-permissions": "5.42.1",

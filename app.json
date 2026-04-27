@@ -1,0 +1,79 @@
+{
+  "name": "connectroca-back-end-system",
+  "description": "ConnectTroca Strapi backend",
+  "repository": "https://github.com/umbranian0/connectroca-back-end-system",
+  "keywords": [
+    "strapi",
+    "node",
+    "postgres",
+    "heroku"
+  ],
+  "addons": [
+    "heroku-postgresql:essential-0"
+  ],
+  "env": {
+    "NODE_ENV": {
+      "value": "production"
+    },
+    "HOST": {
+      "value": "0.0.0.0"
+    },
+    "IS_PROXIED": {
+      "value": "true"
+    },
+    "HEROKU_APP_NAME": {
+      "description": "Heroku app name used to build fallback public URL",
+      "required": true
+    },
+    "PUBLIC_URL": {
+      "description": "Public HTTPS URL of the Heroku app",
+      "required": true
+    },
+    "ADMIN_URL": {
+      "value": "/admin"
+    },
+    "APP_KEYS": {
+      "description": "Comma-separated list with 4 secure random keys",
+      "required": true
+    },
+    "API_TOKEN_SALT": {
+      "description": "Strapi API token salt",
+      "required": true
+    },
+    "ADMIN_JWT_SECRET": {
+      "description": "Strapi admin JWT secret",
+      "required": true
+    },
+    "TRANSFER_TOKEN_SALT": {
+      "description": "Strapi transfer token salt",
+      "required": true
+    },
+    "JWT_SECRET": {
+      "description": "JWT secret for users-permissions",
+      "required": true
+    },
+    "ENCRYPTION_KEY": {
+      "description": "Strapi encryption key",
+      "required": true
+    },
+    "DATABASE_CLIENT": {
+      "value": "postgres"
+    },
+    "DATABASE_SSL": {
+      "value": "true"
+    },
+    "DATABASE_SSL_REJECT_UNAUTHORIZED": {
+      "value": "false"
+    },
+    "CORS_ORIGIN": {
+      "description": "Comma-separated list of frontend origins",
+      "required": true
+    },
+    "CORS_ALLOW_VERCEL_PREVIEWS": {
+      "value": "true"
+    },
+    "STRAPI_TELEMETRY_DISABLED": {
+      "value": "true"
+    }
+  }
+}
