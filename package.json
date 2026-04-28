@@ -9,6 +9,7 @@
     "console": "strapi console",
     "dev": "strapi develop",
     "develop": "strapi develop",
+    "prestart": "node ./scripts/prestart-env-check.mjs",
     "start": "strapi start",
     "strapi": "strapi",
     "setup:local": "node ./scripts/setup-local.mjs",
