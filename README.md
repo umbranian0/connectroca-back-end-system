@@ -2,6 +2,8 @@
 
 This repository is the backend API consumed by the ConnectTroca frontend.
 
+Student quick guide: `STUDENT_GUIDE.md`
+
 ## What this backend includes
 
 - Strapi collections aligned with the ERD:
