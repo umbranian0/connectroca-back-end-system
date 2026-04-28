@@ -18,10 +18,28 @@ const buildActionList = (actions: Array<'find' | 'findOne' | 'create' | 'update'
     actions.map((actionName) => `api::${collectionName}.${collectionName}.${actionName}`),
   );
 
-const PUBLIC_ROLE_ACTIONS = buildActionList(['find', 'findOne']);
+const PUBLIC_PLUGIN_ACTIONS = [
+  'plugin::users-permissions.auth.callback',
+  'plugin::users-permissions.auth.connect',
+  'plugin::users-permissions.auth.register',
+  'plugin::users-permissions.auth.forgotPassword',
+  'plugin::users-permissions.auth.resetPassword',
+  'plugin::users-permissions.auth.emailConfirmation',
+  'plugin::users-permissions.auth.sendEmailConfirmation',
+  'plugin::users-permissions.auth.refresh',
+  'plugin::upload.content-api.find',
+  'plugin::upload.content-api.findOne',
+  'plugin::upload.read',
+];
+
+const PUBLIC_ROLE_ACTIONS = [
+  ...buildActionList(['find', 'findOne']),
+  ...PUBLIC_PLUGIN_ACTIONS,
+];
 
 const AUTHENTICATED_ROLE_ACTIONS = [
   ...buildActionList(['find', 'findOne', 'create', 'update', 'delete']),
+  ...PUBLIC_PLUGIN_ACTIONS,
   'plugin::users-permissions.user.me',
   'plugin::users-permissions.auth.logout',
   'plugin::users-permissions.auth.changePassword',
@@ -488,7 +506,26 @@ async function grantActionsToRole(strapi: Core.Strapi, roleType: RoleType, actio
   }
 }
 
+async function ensureUsersPermissionsAdvancedSettings(strapi: Core.Strapi) {
+  const pluginStore = strapi.store({ type: 'plugin', name: 'users-permissions' });
+  const currentAdvanced = ((await pluginStore.get({ key: 'advanced' })) ?? {}) as Record<string, unknown>;
+
+  await pluginStore.set({
+    key: 'advanced',
+    value: {
+      ...currentAdvanced,
+      allow_register: true,
+      default_role:
+        typeof currentAdvanced.default_role === 'string' && currentAdvanced.default_role
+          ? currentAdvanced.default_role
+          : 'authenticated',
+    },
+  });
+}
+
 async function configureRolePermissions(strapi: Core.Strapi) {
+  await ensureUsersPermissionsAdvancedSettings(strapi);
+
   const usersPermissionsService = strapi.plugin('users-permissions').service('users-permissions');
   await usersPermissionsService.syncPermissions();
 
@@ -889,3 +926,4 @@ export default {
     }
   },
 };
+
