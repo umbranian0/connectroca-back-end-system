@@ -27,6 +27,7 @@ jobs:
         run: npm run typecheck
 
       - name: Sync Heroku config vars from template
+        continue-on-error: true
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
           HEROKU_APP_NAME: ${{ vars.HEROKU_APP_NAME }}
