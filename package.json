@@ -13,6 +13,7 @@
     "strapi": "strapi",
     "setup:local": "node ./scripts/setup-local.mjs",
     "heroku:sync-db-vars": "node ./scripts/sync-heroku-db-vars.mjs",
+    "cloud:sync-heroku-env": "node ./scripts/sync-heroku-config.mjs",
     "typecheck": "tsc --noEmit",
     "docker:check": "docker compose config",
     "docker:up": "docker compose up --build",

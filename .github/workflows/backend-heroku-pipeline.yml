@@ -1,0 +1,50 @@
+name: Backend Heroku Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  validate-sync-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Sync Heroku config vars from template
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+          HEROKU_APP_NAME: ${{ vars.HEROKU_APP_NAME }}
+          HEROKU_PUBLIC_URL: ${{ vars.HEROKU_PUBLIC_URL }}
+          HEROKU_CORS_ORIGIN: ${{ vars.HEROKU_CORS_ORIGIN }}
+          HEROKU_FRONTEND_DEVELOP_URL: ${{ vars.HEROKU_FRONTEND_DEVELOP_URL }}
+          HEROKU_APP_KEYS: ${{ secrets.HEROKU_APP_KEYS }}
+          HEROKU_API_TOKEN_SALT: ${{ secrets.HEROKU_API_TOKEN_SALT }}
+          HEROKU_ADMIN_JWT_SECRET: ${{ secrets.HEROKU_ADMIN_JWT_SECRET }}
+          HEROKU_TRANSFER_TOKEN_SALT: ${{ secrets.HEROKU_TRANSFER_TOKEN_SALT }}
+          HEROKU_JWT_SECRET: ${{ secrets.HEROKU_JWT_SECRET }}
+          HEROKU_ENCRYPTION_KEY: ${{ secrets.HEROKU_ENCRYPTION_KEY }}
+        run: node scripts/sync-heroku-config.mjs
+
+      - name: Deploy to Heroku
+        uses: akhileshns/heroku-deploy@v3.14.15
+        with:
+          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+          heroku_app_name: ${{ vars.HEROKU_APP_NAME }}
+          heroku_email: ${{ secrets.HEROKU_EMAIL }}
+          dontautocreate: true
