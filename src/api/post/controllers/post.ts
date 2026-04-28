@@ -3,5 +3,17 @@
  */
 
 import { factories } from '@strapi/strapi';
+import { assignAuthenticatedUserRelation, getAuthenticatedUserId } from '../../../utils/authenticatedRelation';
 
-export default factories.createCoreController('api::post.post');
+export default factories.createCoreController('api::post.post', () => ({
+  async create(ctx) {
+    const userId = getAuthenticatedUserId(ctx);
+
+    if (!userId) {
+      return ctx.unauthorized('Authentication is required to create posts.');
+    }
+
+    assignAuthenticatedUserRelation(ctx, 'author', userId);
+    return super.create(ctx);
+  },
+}));
