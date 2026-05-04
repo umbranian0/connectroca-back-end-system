@@ -13,7 +13,7 @@
   ],
   "env": {
     "NODE_ENV": {
-      "value": "development"
+      "value": "production"
     },
     "HOST": {
       "value": "0.0.0.0"
