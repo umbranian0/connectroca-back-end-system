@@ -29,8 +29,8 @@ jobs:
       - name: Sync Heroku config vars from template
         continue-on-error: true
         env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-          HEROKU_APP_NAME: ${{ vars.HEROKU_APP_NAME }}
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY || vars.HEROKU_API_KEY }}
+          HEROKU_APP_NAME: ${{ vars.HEROKU_APP_NAME || secrets.HEROKU_APP_NAME }}
           HEROKU_PUBLIC_URL: ${{ vars.HEROKU_PUBLIC_URL }}
           HEROKU_CORS_ORIGIN: ${{ vars.HEROKU_CORS_ORIGIN }}
           HEROKU_FRONTEND_DEVELOP_URL: ${{ vars.HEROKU_FRONTEND_DEVELOP_URL }}
@@ -44,11 +44,23 @@ jobs:
 
       - name: Deploy to Heroku
         env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-          HEROKU_APP_NAME: ${{ vars.HEROKU_APP_NAME }}
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY || vars.HEROKU_API_KEY }}
+          HEROKU_APP_NAME: ${{ vars.HEROKU_APP_NAME || secrets.HEROKU_APP_NAME }}
         run: |
-          if [ -z "$HEROKU_API_KEY" ] || [ -z "$HEROKU_APP_NAME" ]; then
-            echo "HEROKU_API_KEY and HEROKU_APP_NAME are required for deploy."
+          missing=0
+
+          if [ -z "$HEROKU_API_KEY" ]; then
+            echo "Missing HEROKU_API_KEY. Set it in GitHub Actions Secrets."
+            missing=1
+          fi
+
+          if [ -z "$HEROKU_APP_NAME" ]; then
+            echo "Missing HEROKU_APP_NAME. Set it in GitHub Actions Variables (or Secrets)."
+            missing=1
+          fi
+
+          if [ "$missing" -ne 0 ]; then
+            echo "Heroku deploy prerequisites are not configured."
             exit 1
           fi
           cat > "$HOME/.netrc" <<EOF
