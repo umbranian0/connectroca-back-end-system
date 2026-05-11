@@ -13,20 +13,38 @@ export default factories.createCoreController('api::profile.profile', ({ strapi 
       return ctx.unauthorized('Authentication is required to read profile data.');
     }
 
-    const currentFilters = (ctx?.query?.filters as Record<string, unknown>) ?? {};
-    ctx.query = {
-      ...ctx.query,
-      filters: {
-        ...currentFilters,
-        user: {
-          id: {
-            $eq: userId,
+    await this.validateQuery(ctx);
+    const sanitizedQuery = await this.sanitizeQuery(ctx);
+    const currentFilters =
+      (sanitizedQuery?.filters as Record<string, unknown> | undefined) ?? null;
+    const scopedFilters = currentFilters
+      ? {
+          $and: [
+            currentFilters,
+            {
+              user: {
+                id: {
+                  $eq: userId,
+                },
+              },
+            },
+          ],
+        }
+      : {
+          user: {
+            id: {
+              $eq: userId,
+            },
           },
-        },
-      },
-    };
+        };
 
-    return super.find(ctx);
+    const { results, pagination } = await strapi.service('api::profile.profile').find({
+      ...sanitizedQuery,
+      filters: scopedFilters,
+    });
+
+    const sanitizedResults = await this.sanitizeOutput(results, ctx);
+    return this.transformResponse(sanitizedResults, { pagination });
   },
 
   async findOne(ctx) {
