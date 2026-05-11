@@ -103,8 +103,6 @@ export default factories.createCoreController('api::group-member.group-member', 
       return ctx.unauthorized('Authentication is required to join groups.');
     }
 
-    assignAuthenticatedUserRelation(ctx, 'user', userId);
-
     const data = getRequestData(ctx);
     const groupId = extractRelationId(data.group);
 
@@ -123,7 +121,22 @@ export default factories.createCoreController('api::group-member.group-member', 
       return ctx.conflict('You are already a member of this group.');
     }
 
-    return super.create(ctx);
+    const createdMembership = await strapi.db.query('api::group-member.group-member').create({
+      data: {
+        user: userId,
+        group: groupId,
+        role: 'member',
+        joinDate: new Date().toISOString(),
+      },
+    });
+
+    const populatedMembership = await strapi.db.query('api::group-member.group-member').findOne({
+      where: { id: createdMembership.id },
+      populate: ['group', 'user'],
+    });
+
+    const sanitizedMembership = await this.sanitizeOutput(populatedMembership ?? createdMembership, ctx);
+    return this.transformResponse(sanitizedMembership);
   },
 
   async update(ctx) {
