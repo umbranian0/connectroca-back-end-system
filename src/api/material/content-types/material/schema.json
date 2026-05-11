@@ -43,27 +43,32 @@
     "author": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "plugin::users-permissions.user"
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "authoredMaterials"
     },
     "area": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "api::area.area"
+      "target": "api::area.area",
+      "inversedBy": "materials"
     },
     "group": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "api::group.group"
+      "target": "api::group.group",
+      "inversedBy": "materials"
     },
     "comments": {
       "type": "relation",
       "relation": "oneToMany",
-      "target": "api::comment.comment"
+      "target": "api::comment.comment",
+      "mappedBy": "material"
     },
     "likes": {
       "type": "relation",
       "relation": "oneToMany",
-      "target": "api::like.like"
+      "target": "api::like.like",
+      "mappedBy": "material"
     }
   }
 }

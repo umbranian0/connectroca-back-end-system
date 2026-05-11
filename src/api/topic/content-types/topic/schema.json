@@ -34,22 +34,26 @@
     "creator": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "plugin::users-permissions.user"
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "createdTopics"
     },
     "area": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "api::area.area"
+      "target": "api::area.area",
+      "inversedBy": "topics"
     },
     "group": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "api::group.group"
+      "target": "api::group.group",
+      "inversedBy": "topics"
     },
     "posts": {
       "type": "relation",
       "relation": "oneToMany",
-      "target": "api::post.post"
+      "target": "api::post.post",
+      "mappedBy": "topic"
     }
   }
 }

@@ -447,17 +447,24 @@ export interface ApiAreaArea extends Struct.CollectionTypeSchema {
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     description: Schema.Attribute.Text;
+    groups: Schema.Attribute.Relation<'oneToMany', 'api::group.group'>;
     icon: Schema.Attribute.String;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::area.area'> &
       Schema.Attribute.Private;
+    materials: Schema.Attribute.Relation<'oneToMany', 'api::material.material'>;
     name: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
     publishedAt: Schema.Attribute.DateTime;
+    topics: Schema.Attribute.Relation<'oneToMany', 'api::topic.topic'>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    userAreas: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::user-area.user-area'
+    >;
   };
 }
 
@@ -1303,17 +1310,37 @@ export interface PluginUsersPermissionsUser
     timestamps: true;
   };
   attributes: {
+    areaMemberships: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::user-area.user-area'
+    >;
+    authoredComments: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::comment.comment'
+    >;
+    authoredMaterials: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::material.material'
+    >;
+    authoredPosts: Schema.Attribute.Relation<'oneToMany', 'api::post.post'>;
     blocked: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     confirmationToken: Schema.Attribute.String & Schema.Attribute.Private;
     confirmed: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    createdGroups: Schema.Attribute.Relation<'oneToMany', 'api::group.group'>;
+    createdTopics: Schema.Attribute.Relation<'oneToMany', 'api::topic.topic'>;
     email: Schema.Attribute.Email &
       Schema.Attribute.Required &
       Schema.Attribute.SetMinMaxLength<{
         minLength: 6;
       }>;
+    groupMemberships: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::group-member.group-member'
+    >;
+    likes: Schema.Attribute.Relation<'oneToMany', 'api::like.like'>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -1325,6 +1352,7 @@ export interface PluginUsersPermissionsUser
       Schema.Attribute.SetMinMaxLength<{
         minLength: 6;
       }>;
+    profile: Schema.Attribute.Relation<'oneToOne', 'api::profile.profile'>;
     provider: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     resetPasswordToken: Schema.Attribute.String & Schema.Attribute.Private;

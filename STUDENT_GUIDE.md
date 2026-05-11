@@ -1,7 +1,7 @@
 ﻿# ConnectTroca Backend (Strapi) - Student Guide
 
 ## Objective
-This guide is for students who need to run and validate the backend locally.
+This guide is for students who need to run, validate, and test the backend locally.
 
 ## 1) Start backend
 
@@ -15,13 +15,18 @@ docker compose up --build -d
 
 ```powershell
 curl http://localhost:1337/api/health
+curl http://localhost:1337/documentation
 ```
 
-Expected: HTTP `200`.
+Expected:
 
-Open admin:
+- `/api/health` -> HTTP `200`
+- `/documentation` -> HTTP `200`
+
+Open:
 
 - `http://localhost:1337/admin`
+- `http://localhost:1337/documentation`
 
 ## 3) Seeded demo account
 
@@ -44,22 +49,46 @@ Open admin:
 - `/api/auth/local`
 - `/api/auth/forgot-password`
 
-## 5) Daily commands
+## 5) Permission model to test (important)
+
+Public read is limited to:
+
+- `areas`
+- `groups`
+- `materials`
+- `topics`
+- `posts`
+- `comments`
+- `likes`
+
+Collections with protected/scoped access:
+
+- `profiles`
+- `group-members`
+- `user-areas`
+
+Behavior expectation:
+
+- After login, users should only see and modify their own protected records.
+- Ownership checks block unauthorized `update` and `delete` operations.
+
+## 6) Daily commands
 
 ```powershell
 docker compose up -d
 docker compose down
 ```
 
-## 6) Reset database (destructive)
+## 7) Reset database (destructive)
 
 ```powershell
 docker compose down -v
 docker compose up --build -d
 ```
 
-## 7) Notes for project work
+## 8) Notes for project work
 
 - Keep changes in this backend repo only.
 - Preserve environment variables in `.env.example` alignment.
 - Confirm CORS contains frontend origin before integration tests.
+- Do not edit `types/generated/*` manually.

@@ -21,12 +21,14 @@
     "area": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "api::area.area"
+      "target": "api::area.area",
+      "inversedBy": "userAreas"
     },
     "user": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "plugin::users-permissions.user"
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "areaMemberships"
     }
   }
 }

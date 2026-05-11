@@ -26,12 +26,14 @@
     "group": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "api::group.group"
+      "target": "api::group.group",
+      "inversedBy": "members"
     },
     "user": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "plugin::users-permissions.user"
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "groupMemberships"
     }
   }
 }
