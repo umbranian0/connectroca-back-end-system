@@ -46,6 +46,7 @@ const AUTHENTICATED_ROLE_ACTIONS = [
   ...buildActionList(API_COLLECTIONS, ['find', 'findOne', 'create', 'update', 'delete']),
   ...PUBLIC_PLUGIN_ACTIONS,
   'plugin::users-permissions.user.me',
+  'plugin::users-permissions.user.updateMe',
   'plugin::users-permissions.auth.logout',
   'plugin::users-permissions.auth.changePassword',
 ];

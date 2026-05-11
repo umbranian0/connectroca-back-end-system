@@ -20,28 +20,29 @@ export default factories.createCoreController('api::user-area.user-area', ({ str
 
     await this.validateQuery(ctx);
     const sanitizedQuery = await this.sanitizeQuery(ctx);
+    const ownedUserAreas = await strapi.db.query('api::user-area.user-area').findMany({
+      where: { user: userId },
+      select: ['id'],
+    });
+    const ownedUserAreaIds = ownedUserAreas
+      .map((userArea: { id?: number }) => userArea?.id)
+      .filter((id): id is number => Number.isInteger(id));
+
     const currentFilters =
       (sanitizedQuery?.filters as Record<string, unknown> | undefined) ?? null;
+    const ownerScope = {
+      id: {
+        $in: ownedUserAreaIds.length > 0 ? ownedUserAreaIds : [-1],
+      },
+    };
     const scopedFilters = currentFilters
       ? {
           $and: [
             currentFilters,
-            {
-              user: {
-                id: {
-                  $eq: userId,
-                },
-              },
-            },
+            ownerScope,
           ],
         }
-      : {
-          user: {
-            id: {
-              $eq: userId,
-            },
-          },
-        };
+      : ownerScope;
 
     const { results, pagination } = await strapi.service('api::user-area.user-area').find({
       ...sanitizedQuery,

@@ -15,28 +15,29 @@ export default factories.createCoreController('api::profile.profile', ({ strapi 
 
     await this.validateQuery(ctx);
     const sanitizedQuery = await this.sanitizeQuery(ctx);
+    const ownedProfiles = await strapi.db.query('api::profile.profile').findMany({
+      where: { user: userId },
+      select: ['id'],
+    });
+    const ownedProfileIds = ownedProfiles
+      .map((profile: { id?: number }) => profile?.id)
+      .filter((id): id is number => Number.isInteger(id));
+
     const currentFilters =
       (sanitizedQuery?.filters as Record<string, unknown> | undefined) ?? null;
+    const ownerScope = {
+      id: {
+        $in: ownedProfileIds.length > 0 ? ownedProfileIds : [-1],
+      },
+    };
     const scopedFilters = currentFilters
       ? {
           $and: [
             currentFilters,
-            {
-              user: {
-                id: {
-                  $eq: userId,
-                },
-              },
-            },
+            ownerScope,
           ],
         }
-      : {
-          user: {
-            id: {
-              $eq: userId,
-            },
-          },
-        };
+      : ownerScope;
 
     const { results, pagination } = await strapi.service('api::profile.profile').find({
       ...sanitizedQuery,

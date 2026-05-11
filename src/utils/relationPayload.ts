@@ -1,8 +1,36 @@
 type GenericData = Record<string, any>;
 
 export function getRequestData(ctx: any): GenericData {
-  const bodyData = ctx?.request?.body?.data;
-  return bodyData && typeof bodyData === 'object' ? bodyData : {};
+  const rawBody = ctx?.request?.body;
+  const requestBody =
+    typeof rawBody === 'string'
+      ? (() => {
+          try {
+            return JSON.parse(rawBody);
+          } catch {
+            return null;
+          }
+        })()
+      : rawBody;
+  const bodyData = requestBody?.data;
+
+  if (bodyData && typeof bodyData === 'object') {
+    const nestedAttributes = (bodyData as GenericData)?.attributes;
+    return nestedAttributes && typeof nestedAttributes === 'object'
+      ? (nestedAttributes as GenericData)
+      : (bodyData as GenericData);
+  }
+
+  if (requestBody && typeof requestBody === 'object') {
+    const directAttributes = (requestBody as GenericData)?.attributes;
+    if (directAttributes && typeof directAttributes === 'object') {
+      return directAttributes as GenericData;
+    }
+
+    return requestBody as GenericData;
+  }
+
+  return {};
 }
 
 export function hasOwnField(data: GenericData, field: string): boolean {
