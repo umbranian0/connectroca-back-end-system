@@ -12,3 +12,4 @@ yarn-error.log*
 pnpm-debug.log*
 public/uploads/*
 !public/uploads/.gitkeep
+src/extensions/documentation/
