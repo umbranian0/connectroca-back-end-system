@@ -1,4 +1,4 @@
-import type { Core } from '@strapi/strapi';
+Ôªøimport type { Core } from '@strapi/strapi';
 
 const API_COLLECTIONS = [
   'profile',
@@ -13,8 +13,13 @@ const API_COLLECTIONS = [
   'like',
 ] as const;
 
-const buildActionList = (actions: Array<'find' | 'findOne' | 'create' | 'update' | 'delete'>) =>
-  API_COLLECTIONS.flatMap((collectionName) =>
+const PUBLIC_READ_COLLECTIONS = ['area', 'group', 'material', 'topic', 'post', 'comment', 'like'] as const;
+
+const buildActionList = (
+  collections: readonly string[],
+  actions: Array<'find' | 'findOne' | 'create' | 'update' | 'delete'>,
+) =>
+  collections.flatMap((collectionName) =>
     actions.map((actionName) => `api::${collectionName}.${collectionName}.${actionName}`),
   );
 
@@ -33,12 +38,12 @@ const PUBLIC_PLUGIN_ACTIONS = [
 ];
 
 const PUBLIC_ROLE_ACTIONS = [
-  ...buildActionList(['find', 'findOne']),
+  ...buildActionList(PUBLIC_READ_COLLECTIONS, ['find', 'findOne']),
   ...PUBLIC_PLUGIN_ACTIONS,
 ];
 
 const AUTHENTICATED_ROLE_ACTIONS = [
-  ...buildActionList(['find', 'findOne', 'create', 'update', 'delete']),
+  ...buildActionList(API_COLLECTIONS, ['find', 'findOne', 'create', 'update', 'delete']),
   ...PUBLIC_PLUGIN_ACTIONS,
   'plugin::users-permissions.user.me',
   'plugin::users-permissions.auth.logout',
@@ -140,60 +145,60 @@ const DEMO_USERS: DemoUserInput[] = [
 ];
 
 const AREA_SEED = [
-  { name: 'Inform·tica', description: 'Conte˙dos de programaÁ„o e software', color: '#F27D16', icon: '??' },
-  { name: 'Matem·tica', description: 'Estudo de c·lculo e fundamentos matem·ticos', color: '#F6B20F', icon: '?' },
-  { name: 'Gest„o', description: 'OrganizaÁ„o, gest„o e trabalho em equipa', color: '#18B5A3', icon: '??' },
+  { name: 'Inform√°tica', description: 'Conte√∫dos de programa√ß√£o e software', color: '#F27D16', icon: '??' },
+  { name: 'Matem√°tica', description: 'Estudo de c√°lculo e fundamentos matem√°ticos', color: '#F6B20F', icon: '?' },
+  { name: 'Gest√£o', description: 'Organiza√ß√£o, gest√£o e trabalho em equipa', color: '#18B5A3', icon: '??' },
   { name: 'Design', description: 'UX/UI, criatividade e design visual', color: '#D65AD1', icon: '??' },
   {
     name: 'Interdisciplinar',
-    description: 'Projetos que cruzam m˙ltiplas ·reas do conhecimento',
+    description: 'Projetos que cruzam m√∫ltiplas √°reas do conhecimento',
     color: '#7B6EF6',
     icon: '??',
   },
-  { name: 'HistÛria', description: 'Temas de histÛria e cultura geral', color: '#9B7F53', icon: '??' },
-  { name: 'QuÌmica', description: 'Fundamentos e aplicaÁıes de quÌmica', color: '#65C688', icon: '??' },
-  { name: 'Geografia', description: 'Geografia fÌsica e humana', color: '#4BA7D8', icon: '??' },
+  { name: 'Hist√≥ria', description: 'Temas de hist√≥ria e cultura geral', color: '#9B7F53', icon: '??' },
+  { name: 'Qu√≠mica', description: 'Fundamentos e aplica√ß√µes de qu√≠mica', color: '#65C688', icon: '??' },
+  { name: 'Geografia', description: 'Geografia f√≠sica e humana', color: '#4BA7D8', icon: '??' },
 ];
 
 const GROUP_SEED = [
   {
     name: 'Algoritmos e Estruturas',
-    description: 'Grupo focado em resolver exercÌcios e partilhar conhecimento',
+    description: 'Grupo focado em resolver exerc√≠cios e partilhar conhecimento',
     memberLimit: 30,
     location: 'Sala B204',
-    schedule: 'Amanh„ ‡s 15:00',
+    schedule: 'Amanh√£ √†s 15:00',
     status: 'open',
-    areaName: 'Inform·tica',
+    areaName: 'Inform√°tica',
     creatorKey: 'ricardo_santos',
   },
   {
-    name: 'C·lculo II - Exames',
-    description: 'ResoluÁ„o de exercÌcios para o exame final',
+    name: 'C√°lculo II - Exames',
+    description: 'Resolu√ß√£o de exerc√≠cios para o exame final',
     memberLimit: 25,
     location: 'Biblioteca',
-    schedule: 'Sexta ‡s 14:00',
+    schedule: 'Sexta √†s 14:00',
     status: 'open',
-    areaName: 'Matem·tica',
+    areaName: 'Matem√°tica',
     creatorKey: 'mariana_oliveira',
   },
   {
-    name: 'IA - Na Sa˙de',
-    description: 'Projeto interdisciplinar de IA e sa˙de',
+    name: 'IA - Na Sa√∫de',
+    description: 'Projeto interdisciplinar de IA e sa√∫de',
     memberLimit: 15,
     location: 'Online - Teams',
-    schedule: 'Segunda ‡s 16:30',
+    schedule: 'Segunda √†s 16:30',
     status: 'open',
     areaName: 'Interdisciplinar',
     creatorKey: 'pedro_costa',
   },
   {
     name: 'Projetos Interdisciplinares',
-    description: 'EspaÁo para colaboraÁ„o em projetos entre cursos',
+    description: 'Espa√ßo para colabora√ß√£o em projetos entre cursos',
     memberLimit: 40,
-    location: 'LaboratÛrio A1',
-    schedule: 'Quarta ‡s 18:00',
+    location: 'Laborat√≥rio A1',
+    schedule: 'Quarta √†s 18:00',
     status: 'open',
-    areaName: 'Gest„o',
+    areaName: 'Gest√£o',
     creatorKey: 'carlos_mendes',
   },
 ];
@@ -203,24 +208,24 @@ const GROUP_MEMBERSHIP_SEED = [
   { groupName: 'Algoritmos e Estruturas', userKey: 'maria_silva', role: 'member' },
   { groupName: 'Algoritmos e Estruturas', userKey: 'carlos_mendes', role: 'member' },
   { groupName: 'Algoritmos e Estruturas', userKey: 'rafael_dias', role: 'member' },
-  { groupName: 'C·lculo II - Exames', userKey: 'mariana_oliveira', role: 'admin' },
-  { groupName: 'C·lculo II - Exames', userKey: 'maria_silva', role: 'member' },
-  { groupName: 'C·lculo II - Exames', userKey: 'breno_alves', role: 'member' },
-  { groupName: 'IA - Na Sa˙de', userKey: 'pedro_costa', role: 'admin' },
-  { groupName: 'IA - Na Sa˙de', userKey: 'ana_pereira', role: 'member' },
-  { groupName: 'IA - Na Sa˙de', userKey: 'carlos_mendes', role: 'member' },
-  { groupName: 'IA - Na Sa˙de', userKey: 'maria_silva', role: 'member' },
+  { groupName: 'C√°lculo II - Exames', userKey: 'mariana_oliveira', role: 'admin' },
+  { groupName: 'C√°lculo II - Exames', userKey: 'maria_silva', role: 'member' },
+  { groupName: 'C√°lculo II - Exames', userKey: 'breno_alves', role: 'member' },
+  { groupName: 'IA - Na Sa√∫de', userKey: 'pedro_costa', role: 'admin' },
+  { groupName: 'IA - Na Sa√∫de', userKey: 'ana_pereira', role: 'member' },
+  { groupName: 'IA - Na Sa√∫de', userKey: 'carlos_mendes', role: 'member' },
+  { groupName: 'IA - Na Sa√∫de', userKey: 'maria_silva', role: 'member' },
   { groupName: 'Projetos Interdisciplinares', userKey: 'carlos_mendes', role: 'admin' },
   { groupName: 'Projetos Interdisciplinares', userKey: 'pedro_costa', role: 'member' },
   { groupName: 'Projetos Interdisciplinares', userKey: 'ana_pereira', role: 'member' },
 ];
 
 const USER_AREA_SEED = [
-  { userKey: 'maria_silva', areaName: 'Inform·tica', interest: 'Machine Learning' },
-  { userKey: 'maria_silva', areaName: 'HistÛria', interest: 'Leitura crÌtica' },
+  { userKey: 'maria_silva', areaName: 'Inform√°tica', interest: 'Machine Learning' },
+  { userKey: 'maria_silva', areaName: 'Hist√≥ria', interest: 'Leitura cr√≠tica' },
   { userKey: 'maria_silva', areaName: 'Geografia', interest: 'Estudos sociais' },
-  { userKey: 'ricardo_santos', areaName: 'Inform·tica', interest: 'Estruturas de Dados' },
-  { userKey: 'mariana_oliveira', areaName: 'Matem·tica', interest: 'C·lculo avanÁado' },
+  { userKey: 'ricardo_santos', areaName: 'Inform√°tica', interest: 'Estruturas de Dados' },
+  { userKey: 'mariana_oliveira', areaName: 'Matem√°tica', interest: 'C√°lculo avan√ßado' },
   { userKey: 'ana_pereira', areaName: 'Design', interest: 'UX/UI' },
   { userKey: 'pedro_costa', areaName: 'Interdisciplinar', interest: 'Projetos colaborativos' },
 ];
@@ -229,61 +234,61 @@ const PROFILE_SEED = [
   {
     userKey: 'maria_silva',
     displayName: 'Maria Silva',
-    course: 'Eng. Inform·tica - 2∫ Ano',
+    course: 'Eng. Inform√°tica - 2¬∫ Ano',
     year: 2,
-    bio: 'Estudante focada em machine learning e colaboraÁ„o em comunidade.',
+    bio: 'Estudante focada em machine learning e colabora√ß√£o em comunidade.',
     level: 5,
     points: 240,
     registrationDate: '2026-01-15',
-    interests: ['Geografia', 'ProgramaÁ„o', 'QuÌmica', 'HistÛria'],
+    interests: ['Geografia', 'Programa√ß√£o', 'Qu√≠mica', 'Hist√≥ria'],
     badges: [
-      { title: 'Primeiro Post', subtitle: 'Criou TÛpico' },
+      { title: 'Primeiro Post', subtitle: 'Criou T√≥pico' },
       { title: 'Partilha Ativa', subtitle: '10 materiais' },
       { title: 'Colaborador', subtitle: '5 grupos' },
       { title: 'Estrela', subtitle: '50 likes' },
-      { title: 'Expert', subtitle: 'NÌvel 5' },
+      { title: 'Expert', subtitle: 'N√≠vel 5' },
       { title: 'Mentor', subtitle: '20 ajudas' },
     ],
   },
   {
     userKey: 'ricardo_santos',
     displayName: 'Ricardo Santos',
-    course: 'Eng. Inform·tica',
+    course: 'Eng. Inform√°tica',
     year: 3,
-    bio: 'Interesse em algoritmos, dados e mentoring tÈcnico.',
+    bio: 'Interesse em algoritmos, dados e mentoring t√©cnico.',
     level: 4,
     points: 186,
     registrationDate: '2025-12-02',
-    interests: ['Inform·tica', 'Matem·tica'],
+    interests: ['Inform√°tica', 'Matem√°tica'],
   },
   {
     userKey: 'mariana_oliveira',
     displayName: 'Mariana Oliveira',
-    course: 'Matem·tica',
+    course: 'Matem√°tica',
     year: 3,
-    bio: 'Focada em c·lculo e preparaÁ„o para exames finais.',
+    bio: 'Focada em c√°lculo e prepara√ß√£o para exames finais.',
     level: 4,
     points: 172,
     registrationDate: '2025-11-22',
-    interests: ['Matem·tica'],
+    interests: ['Matem√°tica'],
   },
   {
     userKey: 'pedro_costa',
     displayName: 'Pedro Costa',
     course: 'Interdisciplinar',
     year: 2,
-    bio: 'Coordenador de projetos interdisciplinares e inovaÁ„o.',
+    bio: 'Coordenador de projetos interdisciplinares e inova√ß√£o.',
     level: 4,
     points: 165,
     registrationDate: '2026-01-03',
-    interests: ['Interdisciplinar', 'Gest„o'],
+    interests: ['Interdisciplinar', 'Gest√£o'],
   },
   {
     userKey: 'ana_pereira',
     displayName: 'Ana Pereira',
     course: 'Design',
     year: 2,
-    bio: 'Apaixonada por UX/UI e colaboraÁ„o em equipas multidisciplinares.',
+    bio: 'Apaixonada por UX/UI e colabora√ß√£o em equipas multidisciplinares.',
     level: 3,
     points: 120,
     registrationDate: '2026-01-25',
@@ -295,51 +300,51 @@ const TOPIC_SEED = [
   {
     title: 'Machine Learning em Python',
     description:
-      'Projeto de classificaÁ„o de imagens usando scikit-learn e TensorFlow. Procuro recomendaÁıes de fluxo de trabalho e validaÁ„o.',
+      'Projeto de classifica√ß√£o de imagens usando scikit-learn e TensorFlow. Procuro recomenda√ß√µes de fluxo de trabalho e valida√ß√£o.',
     creationDate: '2026-04-21T10:00:00.000Z',
     creatorKey: 'ricardo_santos',
-    areaName: 'Inform·tica',
+    areaName: 'Inform√°tica',
     groupName: 'Algoritmos e Estruturas',
     views: 892,
     isPinned: true,
   },
   {
-    title: 'Derivadas Parciais - C·lculo II',
-    description: 'ExplicaÁ„o com exemplos pr·ticos sobre derivadas parciais e aplicaÁ„o em problemas de engenharia.',
+    title: 'Derivadas Parciais - C√°lculo II',
+    description: 'Explica√ß√£o com exemplos pr√°ticos sobre derivadas parciais e aplica√ß√£o em problemas de engenharia.',
     creationDate: '2026-04-22T14:30:00.000Z',
     creatorKey: 'mariana_oliveira',
-    areaName: 'Matem·tica',
-    groupName: 'C·lculo II - Exames',
+    areaName: 'Matem√°tica',
+    groupName: 'C√°lculo II - Exames',
     views: 567,
     isPinned: true,
   },
   {
-    title: 'AplicaÁ„o de Gest„o com IA',
-    description: 'Procuro colaboradores de diferentes cursos para um projeto de gest„o suportado por IA.',
+    title: 'Aplica√ß√£o de Gest√£o com IA',
+    description: 'Procuro colaboradores de diferentes cursos para um projeto de gest√£o suportado por IA.',
     creationDate: '2026-04-23T09:10:00.000Z',
     creatorKey: 'pedro_costa',
-    areaName: 'Gest„o',
+    areaName: 'Gest√£o',
     groupName: 'Projetos Interdisciplinares',
     views: 1234,
     isPinned: false,
   },
   {
     title: 'Recursos UX/UI Design',
-    description: 'Partilha de referÍncias gratuitas para prototipagem e design de interfaces.',
+    description: 'Partilha de refer√™ncias gratuitas para prototipagem e design de interfaces.',
     creationDate: '2026-04-23T17:55:00.000Z',
     creatorKey: 'ana_pereira',
     areaName: 'Design',
-    groupName: 'IA - Na Sa˙de',
+    groupName: 'IA - Na Sa√∫de',
     views: 445,
     isPinned: false,
   },
   {
-    title: 'D˙vidas sobre IA',
-    description: 'Quais s„o os passos essenciais entre preparaÁ„o de dados, escolha do modelo e avaliaÁ„o?',
+    title: 'D√∫vidas sobre IA',
+    description: 'Quais s√£o os passos essenciais entre prepara√ß√£o de dados, escolha do modelo e avalia√ß√£o?',
     creationDate: '2026-04-24T08:20:00.000Z',
     creatorKey: 'maria_silva',
-    areaName: 'Inform·tica',
-    groupName: 'IA - Na Sa˙de',
+    areaName: 'Inform√°tica',
+    groupName: 'IA - Na Sa√∫de',
     views: 431,
     isPinned: false,
   },
@@ -348,111 +353,111 @@ const TOPIC_SEED = [
 const MATERIAL_SEED = [
   {
     title: 'Resumo - Estrutura de Dados',
-    description: 'Resumo com estruturas lineares e n„o lineares para revis„o de prova.',
+    description: 'Resumo com estruturas lineares e n√£o lineares para revis√£o de prova.',
     type: 'doc',
     publicationDate: '2026-04-24T09:00:00.000Z',
     views: 532,
     authorKey: 'rafael_dias',
-    areaName: 'Inform·tica',
+    areaName: 'Inform√°tica',
     groupName: 'Algoritmos e Estruturas',
   },
   {
-    title: 'Formul·rios - Derivadas',
-    description: 'CompilaÁ„o de fÛrmulas e exemplos de derivadas para C·lculo II.',
+    title: 'Formul√°rios - Derivadas',
+    description: 'Compila√ß√£o de f√≥rmulas e exemplos de derivadas para C√°lculo II.',
     type: 'doc',
     publicationDate: '2026-04-22T19:00:00.000Z',
     views: 727,
     authorKey: 'breno_alves',
-    areaName: 'Matem·tica',
-    groupName: 'C·lculo II - Exames',
+    areaName: 'Matem√°tica',
+    groupName: 'C√°lculo II - Exames',
   },
   {
-    title: 'Tutorial: ¡rvores Bin·rias',
-    description: 'VÌdeo introdutÛrio sobre operaÁıes em ·rvores bin·rias.',
+    title: 'Tutorial: √Årvores Bin√°rias',
+    description: 'V√≠deo introdut√≥rio sobre opera√ß√µes em √°rvores bin√°rias.',
     type: 'video',
     publicationDate: '2026-04-25T12:40:00.000Z',
     views: 176,
     authorKey: 'carlos_mendes',
-    areaName: 'Inform·tica',
+    areaName: 'Inform√°tica',
     groupName: 'Algoritmos e Estruturas',
   },
   {
     title: 'Visual Basic',
-    description: 'ColeÁ„o histÛrica de materiais de Visual Basic para referÍncia.',
+    description: 'Cole√ß√£o hist√≥rica de materiais de Visual Basic para refer√™ncia.',
     type: 'video',
     publicationDate: '2022-02-01T10:00:00.000Z',
     views: 10000000,
     authorKey: 'luis_magalhos',
-    areaName: 'Inform·tica',
+    areaName: 'Inform√°tica',
     groupName: 'Algoritmos e Estruturas',
   },
   {
-    title: 'Projeto IoT na Sa˙de',
-    description: 'Documento de planeamento para projeto IoT aplicado ‡ sa˙de.',
+    title: 'Projeto IoT na Sa√∫de',
+    description: 'Documento de planeamento para projeto IoT aplicado √† sa√∫de.',
     type: 'link',
     publicationDate: '2026-04-23T16:15:00.000Z',
     views: 95,
     externalUrl: 'https://example.org/projeto-iot-saude',
     authorKey: 'pedro_costa',
     areaName: 'Interdisciplinar',
-    groupName: 'IA - Na Sa˙de',
+    groupName: 'IA - Na Sa√∫de',
   },
 ];
 
 const POST_SEED = [
   {
     content:
-      'Fala pessoal! Estou comeÁando a estudar Machine Learning em Python e queria tirar d˙vidas sobre o fluxo completo do projeto.',
+      'Fala pessoal! Estou come√ßando a estudar Machine Learning em Python e queria tirar d√∫vidas sobre o fluxo completo do projeto.',
     postDate: '2026-04-24T09:25:00.000Z',
     authorKey: 'maria_silva',
     topicTitle: 'Machine Learning em Python',
   },
   {
     content:
-      'ComeÁa pelo b·sico: define o problema, prepara os dados, separa treino e teste, e sÛ depois escolhe modelos mais complexos.',
+      'Come√ßa pelo b√°sico: define o problema, prepara os dados, separa treino e teste, e s√≥ depois escolhe modelos mais complexos.',
     postDate: '2026-04-24T09:37:00.000Z',
     authorKey: 'luis_magalhos',
     topicTitle: 'Machine Learning em Python',
   },
   {
     content:
-      'Perfeito. Vou comeÁar com scikit-learn antes de avanÁar para TensorFlow para reduzir a complexidade inicial.',
+      'Perfeito. Vou come√ßar com scikit-learn antes de avan√ßar para TensorFlow para reduzir a complexidade inicial.',
     postDate: '2026-04-24T09:43:00.000Z',
     authorKey: 'maria_silva',
     topicTitle: 'Machine Learning em Python',
   },
   {
     content:
-      'Partilho aqui uma lista de exercÌcios resolvidos de C·lculo II para quem est· a preparar o exame final.',
+      'Partilho aqui uma lista de exerc√≠cios resolvidos de C√°lculo II para quem est√° a preparar o exame final.',
     postDate: '2026-04-22T16:00:00.000Z',
     authorKey: 'mariana_oliveira',
-    topicTitle: 'Derivadas Parciais - C·lculo II',
+    topicTitle: 'Derivadas Parciais - C√°lculo II',
   },
   {
     content:
-      'O projeto de Gest„o com IA precisa de apoio em frontend e an·lise de requisitos. Interessados? ',
+      'O projeto de Gest√£o com IA precisa de apoio em frontend e an√°lise de requisitos. Interessados? ',
     postDate: '2026-04-23T11:15:00.000Z',
     authorKey: 'pedro_costa',
-    topicTitle: 'AplicaÁ„o de Gest„o com IA',
+    topicTitle: 'Aplica√ß√£o de Gest√£o com IA',
   },
 ];
 
 const COMMENT_SEED = [
   {
-    content: 'Excelente resumo, ajudou bastante na revis„o de listas encadeadas.',
+    content: 'Excelente resumo, ajudou bastante na revis√£o de listas encadeadas.',
     authorKey: 'maria_silva',
     materialTitle: 'Resumo - Estrutura de Dados',
   },
   {
-    content: '”tima explicaÁ„o. J· consegui aplicar as fÛrmulas nos exercÌcios de derivadas.',
+    content: '√ìtima explica√ß√£o. J√° consegui aplicar as f√≥rmulas nos exerc√≠cios de derivadas.',
     authorKey: 'carlos_mendes',
-    materialTitle: 'Formul·rios - Derivadas',
+    materialTitle: 'Formul√°rios - Derivadas',
   },
   {
-    content: 'Esse passo-a-passo esclareceu o fluxo de avaliaÁ„o dos modelos. Obrigada!',
+    content: 'Esse passo-a-passo esclareceu o fluxo de avalia√ß√£o dos modelos. Obrigada!',
     authorKey: 'ana_pereira',
     postContent:
-      'ComeÁa pelo b·sico: define o problema, prepara os dados, separa treino e teste, e sÛ depois escolhe modelos mais complexos.',
+      'Come√ßa pelo b√°sico: define o problema, prepara os dados, separa treino e teste, e s√≥ depois escolhe modelos mais complexos.',
   },
 ];
 
@@ -460,13 +465,13 @@ const LIKE_SEED = [
   {
     targetType: 'post',
     postContent:
-      'ComeÁa pelo b·sico: define o problema, prepara os dados, separa treino e teste, e sÛ depois escolhe modelos mais complexos.',
+      'Come√ßa pelo b√°sico: define o problema, prepara os dados, separa treino e teste, e s√≥ depois escolhe modelos mais complexos.',
     userKeys: ['maria_silva', 'ricardo_santos', 'carlos_mendes', 'ana_pereira'],
   },
   {
     targetType: 'post',
     postContent:
-      'Partilho aqui uma lista de exercÌcios resolvidos de C·lculo II para quem est· a preparar o exame final.',
+      'Partilho aqui uma lista de exerc√≠cios resolvidos de C√°lculo II para quem est√° a preparar o exame final.',
     userKeys: ['maria_silva', 'breno_alves', 'pedro_costa'],
   },
   {
@@ -914,7 +919,71 @@ async function seedDemoData(strapi: Core.Strapi) {
 }
 
 export default {
-  register() {},
+  register({ strapi }: { strapi: Core.Strapi }) {
+    const userContentType = strapi.contentType('plugin::users-permissions.user') as any;
+
+    if (!userContentType?.attributes) {
+      return;
+    }
+
+    userContentType.attributes = {
+      ...userContentType.attributes,
+      profile: {
+        type: 'relation',
+        relation: 'oneToOne',
+        target: 'api::profile.profile',
+        mappedBy: 'user',
+      },
+      createdGroups: {
+        type: 'relation',
+        relation: 'oneToMany',
+        target: 'api::group.group',
+        mappedBy: 'creator',
+      },
+      groupMemberships: {
+        type: 'relation',
+        relation: 'oneToMany',
+        target: 'api::group-member.group-member',
+        mappedBy: 'user',
+      },
+      areaMemberships: {
+        type: 'relation',
+        relation: 'oneToMany',
+        target: 'api::user-area.user-area',
+        mappedBy: 'user',
+      },
+      authoredMaterials: {
+        type: 'relation',
+        relation: 'oneToMany',
+        target: 'api::material.material',
+        mappedBy: 'author',
+      },
+      createdTopics: {
+        type: 'relation',
+        relation: 'oneToMany',
+        target: 'api::topic.topic',
+        mappedBy: 'creator',
+      },
+      authoredPosts: {
+        type: 'relation',
+        relation: 'oneToMany',
+        target: 'api::post.post',
+        mappedBy: 'author',
+      },
+      authoredComments: {
+        type: 'relation',
+        relation: 'oneToMany',
+        target: 'api::comment.comment',
+        mappedBy: 'author',
+      },
+      likes: {
+        type: 'relation',
+        relation: 'oneToMany',
+        target: 'api::like.like',
+        mappedBy: 'user',
+      },
+    };
+  },
 
   async bootstrap({ strapi }: { strapi: Core.Strapi }) {
     try {
@@ -926,4 +995,6 @@ export default {
     }
   },
 };
+
+
 

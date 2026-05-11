@@ -22,22 +22,26 @@
     "author": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "plugin::users-permissions.user"
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "authoredPosts"
     },
     "topic": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "api::topic.topic"
+      "target": "api::topic.topic",
+      "inversedBy": "posts"
     },
     "comments": {
       "type": "relation",
       "relation": "oneToMany",
-      "target": "api::comment.comment"
+      "target": "api::comment.comment",
+      "mappedBy": "post"
     },
     "likes": {
       "type": "relation",
       "relation": "oneToMany",
-      "target": "api::like.like"
+      "target": "api::like.like",
+      "mappedBy": "post"
     }
   }
 }
