@@ -1,8 +1,15 @@
 # ConnectTroca Backend (Strapi 5) - Student + Deployment Guide
 
-This repository is the backend API consumed by the ConnectTroca frontend.
+This repository is the backend API used by the ConnectTroca frontend.
 
 Student quick guide: `STUDENT_GUIDE.md`
+
+## May 2026 update summary
+
+- Relations were aligned with the project ERD (`mappedBy` / `inversedBy` fixes).
+- User-scoped access rules were added to prevent cross-user data exposure.
+- Public role access was reduced to safe read-only collections.
+- Swagger/OpenAPI documentation is now enabled at `/documentation`.
 
 ## What this backend includes
 
@@ -18,8 +25,8 @@ Student quick guide: `STUDENT_GUIDE.md`
   - `comments`
   - `likes`
 - Bootstrap automation on startup:
-  - Role permission setup (public read + authenticated CRUD)
-  - Demo data seeding for immediate frontend visualization
+  - Role and permission setup
+  - Demo data seeding for frontend integration
 
 ## Prerequisites (student machine)
 
@@ -47,20 +54,93 @@ Copy-Item .env.example .env
 docker compose up --build -d
 ```
 
-### 4. Validate health endpoint
+### 4. Validate endpoints
 
 ```powershell
 curl http://localhost:1337/api/health
+curl http://localhost:1337/documentation
 ```
 
-### 5. Open Strapi admin
+Expected status:
 
-- `http://localhost:1337/admin`
+- `/api/health` -> `200`
+- `/documentation` -> `200`
+
+### 5. Open Strapi admin and API docs
+
+- Admin: `http://localhost:1337/admin`
+- Swagger UI: `http://localhost:1337/documentation`
 
 ## Demo credentials (seeded)
 
 - Email: `integration.user@example.com`
 - Password: `Integration123!`
+
+## Current API visibility rules (important for students)
+
+Public users can only read:
+
+- `areas`
+- `groups`
+- `materials`
+- `topics`
+- `posts`
+- `comments`
+- `likes`
+
+`profiles`, `group-members`, and `user-areas` are no longer public and are scoped by authenticated user logic.
+
+For authenticated users, update/delete on user-owned collections are protected by ownership checks (for example: profile owner, post author, group creator).
+
+## Daily usage commands
+
+Start existing containers:
+
+```powershell
+docker compose up -d
+```
+
+Stop containers:
+
+```powershell
+docker compose down
+```
+
+Logs:
+
+```powershell
+docker compose logs -f strapi
+```
+
+Run local checks:
+
+```powershell
+npm run typecheck
+npm run build
+```
+
+## Full reset (destructive)
+
+```powershell
+docker compose down -v
+docker compose up --build -d
+```
+
+## Host-machine mode (optional)
+
+```powershell
+npm ci
+npm run develop
+```
+
+## Where each type of change should go
+
+- Schema: `src/api/<name>/content-types/<name>/schema.json`
+- Controller: `src/api/<name>/controllers/<name>.ts`
+- Routes: `src/api/<name>/routes/<name>.ts`
+- Service logic: `src/api/<name>/services/<name>.ts`
+- Startup automation (roles/seed): `src/index.ts`
+- Swagger config: `config/plugins.ts`
 
 ## Heroku deployment (recommended for backend production)
 
@@ -86,8 +166,6 @@ heroku addons:create heroku-postgresql:essential-0 -a <your-backend-app-name>
 ```bash
 heroku config:get DATABASE_URL -a <your-backend-app-name>
 ```
-
-Do not commit database credentials in git. Keep secrets only in Heroku config vars.
 
 ### 3. Set required backend config vars
 
@@ -122,26 +200,10 @@ heroku config:set \
   -a <your-backend-app-name>
 ```
 
-Important:
-
-- If `DATABASE_URL` exists, the app uses it automatically.
-- `DATABASE_SSL` defaults to `true` when `DATABASE_URL` is present.
-- If you also want component-style DB vars (`DATABASE_HOST`, `DATABASE_PORT`, `DATABASE_NAME`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`) synced in Heroku, run:
-
-```bash
-npm run heroku:sync-db-vars -- <your-backend-app-name>
-```
-
 ### 4. Deploy to Heroku
 
 ```bash
 git push heroku main
-```
-
-If your branch is `master`:
-
-```bash
-git push heroku master
 ```
 
 ### 5. Verify deployment
@@ -150,6 +212,7 @@ git push heroku master
 heroku open -a <your-backend-app-name>
 heroku open -a <your-backend-app-name> --path /admin
 curl https://<your-backend-app-name>.herokuapp.com/api/health
+curl https://<your-backend-app-name>.herokuapp.com/documentation
 ```
 
 If admin is inaccessible, check logs:
@@ -157,105 +220,6 @@ If admin is inaccessible, check logs:
 ```bash
 heroku logs --tail -a <your-backend-app-name>
 ```
-
-## Vercel frontend + Heroku backend
-
-Recommended architecture:
-
-- Frontend on Vercel
-- Backend (Strapi) on Heroku
-
-Set frontend variable (`connectroca-front-end-system`) to the backend URL:
-
-- `VITE_STRAPI_URL=https://<your-backend-app-name>.herokuapp.com`
-
-## CORS support
-
-`config/middlewares.ts` supports both:
-
-1. Explicit allowed origins through `CORS_ORIGIN`
-2. Optional wildcard for Vercel preview domains through `CORS_ALLOW_VERCEL_PREVIEWS=true`
-
-It also includes safe defaults for hybrid usage:
-
-- Local frontend origins (`http://localhost:5173`, `http://127.0.0.1:5173`, `http://localhost:3000`, `http://127.0.0.1:3000`)
-- Develop frontend origin from `FRONTEND_DEVELOP_URL` (defaults to `https://connectroca-front-end-system.vercel.app`)
-
-## Runtime modes (local, develop, cross)
-
-1. Full local (`frontend local` + `backend local`):
-   - Use `.env.example`
-   - Keep `DATABASE_URL` empty and local Postgres settings
-2. Full develop (`frontend Vercel` + `backend Heroku`):
-   - Use Heroku config with `.env.heroku.example`
-   - Set `PUBLIC_URL` to Heroku URL and keep `DATABASE_SSL=true`
-3. Cross (`frontend local` -> `backend Heroku`):
-   - Backend must allow local frontend origins in CORS
-   - Keep `CORS_ORIGIN` including both `https://connectroca-front-end-system.vercel.app` and local origins
-   - Keep `FRONTEND_DEVELOP_URL=https://connectroca-front-end-system.vercel.app`
-
-## Daily usage commands
-
-Start existing containers:
-
-```powershell
-docker compose up -d
-```
-
-Stop containers:
-
-```powershell
-docker compose down
-```
-
-Logs:
-
-```powershell
-docker compose logs -f strapi
-```
-
-## Full reset (destructive)
-
-```powershell
-docker compose down -v
-docker compose up --build -d
-```
-
-## Host-machine mode (optional)
-
-```powershell
-npm ci
-npm run develop
-```
-
-## Beginner safety rules
-
-1. Do not edit `types/generated/*` manually.
-2. Keep backend custom code inside `src/api/*` and `src/index.ts`.
-3. After schema changes, restart backend and test endpoint responses.
-
-## Where each type of change should go
-
-- Schema: `src/api/<name>/content-types/<name>/schema.json`
-- Controller: `src/api/<name>/controllers/<name>.ts`
-- Routes: `src/api/<name>/routes/<name>.ts`
-- Service logic: `src/api/<name>/services/<name>.ts`
-- Startup automation (roles/seed): `src/index.ts`
-
-## Troubleshooting quick checks
-
-If frontend has no data:
-
-1. Check `/api/health` returns `200`.
-2. Check Strapi logs for bootstrap/CORS errors.
-3. Validate at least one endpoint, e.g. `/api/topics?populate=*`.
-4. Confirm frontend `VITE_STRAPI_URL` points to this backend.
-
-If authentication fails:
-
-1. Verify JWT-related env vars are present in Heroku.
-2. Restart backend dyno (`heroku ps:restart -a <your-backend-app-name>`).
-3. Retry login/register from frontend.
 
 
 

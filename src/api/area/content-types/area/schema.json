@@ -25,6 +25,30 @@
     },
     "icon": {
       "type": "string"
+    },
+    "groups": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::group.group",
+      "mappedBy": "area"
+    },
+    "materials": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::material.material",
+      "mappedBy": "area"
+    },
+    "topics": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::topic.topic",
+      "mappedBy": "area"
+    },
+    "userAreas": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::user-area.user-area",
+      "mappedBy": "area"
     }
   }
 }

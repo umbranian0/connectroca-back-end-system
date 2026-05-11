@@ -22,22 +22,26 @@
     "user": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "plugin::users-permissions.user"
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "likes"
     },
     "material": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "api::material.material"
+      "target": "api::material.material",
+      "inversedBy": "likes"
     },
     "post": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "api::post.post"
+      "target": "api::post.post",
+      "inversedBy": "likes"
     },
     "comment": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "api::comment.comment"
+      "target": "api::comment.comment",
+      "inversedBy": "likes"
     }
   }
 }

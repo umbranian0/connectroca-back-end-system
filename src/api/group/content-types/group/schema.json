@@ -41,27 +41,32 @@
     "creator": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "plugin::users-permissions.user"
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "createdGroups"
     },
     "area": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "api::area.area"
+      "target": "api::area.area",
+      "inversedBy": "groups"
     },
     "members": {
       "type": "relation",
       "relation": "oneToMany",
-      "target": "api::group-member.group-member"
+      "target": "api::group-member.group-member",
+      "mappedBy": "group"
     },
     "topics": {
       "type": "relation",
       "relation": "oneToMany",
-      "target": "api::topic.topic"
+      "target": "api::topic.topic",
+      "mappedBy": "group"
     },
     "materials": {
       "type": "relation",
       "relation": "oneToMany",
-      "target": "api::material.material"
+      "target": "api::material.material",
+      "mappedBy": "group"
     }
   }
 }
