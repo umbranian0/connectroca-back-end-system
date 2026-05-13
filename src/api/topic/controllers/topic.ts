@@ -3,22 +3,49 @@
  */
 
 import { factories } from '@strapi/strapi';
-import { assignAuthenticatedUserRelation, getAuthenticatedUserId } from '../../../utils/authenticatedRelation';
 
 export default factories.createCoreController('api::topic.topic', ({ strapi }) => ({
+  async find(ctx) {
+    const topics = await strapi.entityService.findMany('api::topic.topic', {
+      populate: {
+        area: true,
+        group: true,
+        creator: true,
+        posts: true,
+      },
+    });
+
+    const total = await strapi.entityService.count('api::topic.topic');
+
+    return {
+      data: topics,
+      meta: {
+        pagination: {
+          page: 1,
+          pageSize: Array.isArray(topics) ? topics.length : 0,
+          pageCount: 1,
+          total,
+        },
+      },
+    };
+  },
+
   async create(ctx) {
-    const userId = getAuthenticatedUserId(ctx);
+    const userId = ctx.state?.user?.id;
 
     if (!userId) {
       return ctx.unauthorized('Authentication is required to create topics.');
     }
 
-    assignAuthenticatedUserRelation(ctx, 'creator', userId);
+    ctx.request.body = ctx.request.body || {};
+    ctx.request.body.data = ctx.request.body.data || {};
+    ctx.request.body.data.creator = userId;
+
     return super.create(ctx);
   },
 
   async update(ctx) {
-    const userId = getAuthenticatedUserId(ctx);
+    const userId = ctx.state?.user?.id;
 
     if (!userId) {
       return ctx.unauthorized('Authentication is required to update topics.');
@@ -38,12 +65,15 @@ export default factories.createCoreController('api::topic.topic', ({ strapi }) =
       return ctx.forbidden('You can only update topics you created.');
     }
 
-    assignAuthenticatedUserRelation(ctx, 'creator', userId);
+    ctx.request.body = ctx.request.body || {};
+    ctx.request.body.data = ctx.request.body.data || {};
+    ctx.request.body.data.creator = userId;
+
     return super.update(ctx);
   },
 
   async delete(ctx) {
-    const userId = getAuthenticatedUserId(ctx);
+    const userId = ctx.state?.user?.id;
 
     if (!userId) {
       return ctx.unauthorized('Authentication is required to delete topics.');
